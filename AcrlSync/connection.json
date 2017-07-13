@@ -1,0 +1,24 @@
+{
+  "Protocol": 2,
+  "HostName": "host",
+  "PortNumber": 0,
+  "UserName": "user",
+  "Password": "password",
+  "SecurePassword": {
+    "Length": 8
+  },
+  "Timeout": "00:00:15",
+  "TimeoutInMilliseconds": 15000,
+  "PrivateKeyPassphrase": null,
+  "SshHostKeyFingerprint": null,
+  "GiveUpSecurityAndAcceptAnySshHostKey": false,
+  "SshPrivateKeyPath": null,
+  "SshPrivateKeyPassphrase": null,
+  "FtpMode": 0,
+  "FtpSecure": 0,
+  "WebdavSecure": false,
+  "WebdavRoot": null,
+  "TlsHostCertificateFingerprint": null,
+  "GiveUpSecurityAndAcceptAnyTlsHostCertificate": false,
+  "TlsClientCertificatePath": null
+}
