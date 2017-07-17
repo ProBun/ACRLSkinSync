@@ -15,17 +15,18 @@
 
     <Grid x:Name="LayoutRoot">
         <DockPanel LastChildFill="True" Margin="15 10">
-            <Grid DockPanel.Dock="Top" HorizontalAlignment="Left">
+            <Grid DockPanel.Dock="Top">
                 <Grid.RowDefinitions>
+                    <RowDefinition/>
                     <RowDefinition/>
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*" MinWidth="150"/>
                     <ColumnDefinition Width="80"/>
-                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="0.5*" MinWidth="100"/>
                     <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="1.5*" MinWidth="150"/>
                     <ColumnDefinition Width="80"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Grid.Row="0" FontWeight="Bold" Text="FTP Address"/>
@@ -34,7 +35,10 @@
                 <TextBlock Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" Foreground="Red" Margin="15 0 0 0" Text="{Binding ftpError}"/>
 
                 <TextBlock Grid.Column="4" Grid.Row="0" FontWeight="Bold" Text="AC Cars Path"/>
-                <TextBox Grid.Column="4" Grid.Row="1" Text="{Binding acPath}"/>
+                <TextBox Grid.Column="4" Grid.Row="1" Grid.RowSpan="2" Text="{Binding acPath}"
+                        VerticalScrollBarVisibility="Disabled"
+                        HorizontalScrollBarVisibility="Auto"
+                        />
                 <Button Grid.Column="5" Grid.Row="1" Margin="10 0 0 0" Content="_Find" Command="{Binding findClick}"/>
             </Grid>
             <Grid DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="0 5 0 0">

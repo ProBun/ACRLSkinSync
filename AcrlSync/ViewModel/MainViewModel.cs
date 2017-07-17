@@ -311,7 +311,7 @@ namespace AcrlSync.ViewModel
                     List<optionItem> list = new List<optionItem>();
                     foreach (Tree s in _seasons)
                     {
-                        flattenTree(s, list);
+                        flattenTree(s,"", list);
                     }
                     options = list;
                 }
@@ -328,12 +328,12 @@ namespace AcrlSync.ViewModel
             //_dataService.GetDirectoryDetails("Download");
         }
 
-        private void flattenTree(Tree input, List<optionItem> output)
+        private void flattenTree(Tree input, string parent, List<optionItem> output)
         {
             if (input.children.Count == 0)
             {
                 optionItem item = new optionItem();
-                item.name = input.Name;
+                item.name = String.Format("{0} \u2013 {1}", parent, input.Name);
                 item.dlPath = input.fullName;
                 item.isChecked = false;
                 output.Add(item);
@@ -341,7 +341,7 @@ namespace AcrlSync.ViewModel
             else
             {
                 foreach (Tree child in input.children)
-                    flattenTree(child, output);
+                    flattenTree(child, input.Name, output);
             }
         }
 
