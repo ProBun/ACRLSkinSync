@@ -195,6 +195,7 @@ namespace AcrlSync.ViewModel
         public RelayCommand analyseClick { get; set; }
         public RelayCommand runClick { get; set; }
         public RelayCommand findClick { get; set; }
+        public RelayCommand uploadClick { get; set; }
 
         // private jobVM _jobvm;
         private List<Tree> _seasons;
@@ -248,6 +249,7 @@ namespace AcrlSync.ViewModel
             runClick = new RelayCommand(runJob);
             ftpClick = new RelayCommand(reinitialise);
             findClick = new RelayCommand(findPath);
+            uploadClick = new RelayCommand(switchToUpload);
 
             _dataService = dataService;
             _log = string.Empty;
@@ -815,6 +817,15 @@ namespace AcrlSync.ViewModel
             string path = AppDomain.CurrentDomain.BaseDirectory;
             string json = JsonConvert.SerializeObject(acPath, Formatting.Indented);
             System.IO.File.WriteAllText(path + "/acPath.json", json);
+        }
+
+        private void switchToUpload()
+        {
+            var files = new List<string>();
+            DirectoryInfo tPath = Directory.GetParent(acPath);
+            string path = tPath.Parent.FullName;
+
+            Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(path, "uploadSkin Show"));
         }
 
         ////public override void Cleanup()

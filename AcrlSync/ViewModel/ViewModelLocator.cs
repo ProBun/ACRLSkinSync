@@ -32,6 +32,7 @@ namespace AcrlSync.ViewModel
             SimpleIoc.Default.Register<IFtpService, FtpService>();
             SimpleIoc.Default.Register<MainViewModel>();
             SimpleIoc.Default.Register<jobVM>();
+            SimpleIoc.Default.Register<uploadSkinVM>();
         }
 
         /// <summary>
@@ -52,6 +53,13 @@ namespace AcrlSync.ViewModel
             get
             {
                 return ServiceLocator.Current.GetInstance<jobVM>();
+            }
+        }
+        public uploadSkinVM uploadVM
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<uploadSkinVM>();
             }
         }
         /// <summary>

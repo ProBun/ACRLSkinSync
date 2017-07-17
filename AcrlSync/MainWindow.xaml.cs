@@ -26,6 +26,15 @@ namespace AcrlSync
                     dialog.ShowDialog();
                 }
             });
+
+            Messenger.Default.Register<NotificationMessage<string>>(this, (message) => {
+                if (message.Notification == "uploadSkin Show")
+                {
+                    UploadView dialog = new UploadView();
+                    Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(message.Content, "upload"));
+                    dialog.ShowDialog();
+                }
+            });
             Closing += (s, e) => ViewModelLocator.Cleanup();
         }    
     }

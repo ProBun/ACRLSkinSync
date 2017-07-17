@@ -38,8 +38,12 @@
                 <TextBox Grid.Column="4" Grid.Row="1" Grid.RowSpan="2" Text="{Binding acPath}"
                         VerticalScrollBarVisibility="Disabled"
                         HorizontalScrollBarVisibility="Auto"
+                        VerticalAlignment="Top"
+                        MinHeight="20"
                         />
                 <Button Grid.Column="5" Grid.Row="1" Margin="10 0 0 0" Content="_Find" Command="{Binding findClick}"/>
+
+                <Button Grid.Column="5" Grid.Row="2" Margin="10 10 0 0" Content="_Upload" Command="{Binding uploadClick}"/>
             </Grid>
             <Grid DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="0 5 0 0">
                 <Grid.RowDefinitions>
