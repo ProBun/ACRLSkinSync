@@ -144,7 +144,7 @@ namespace AcrlSync.ViewModel
             treeSelectionChange = new RelayCommand<Tree>(TreeChange);
 
             _seasons = new List<Tree>();
-            var item = new Tree();
+            var item = new Tree("Download");
             _seasons.Add(item);
 
             Messenger.Default.Register<NotificationMessage<JobItem>>(this, (message) => {

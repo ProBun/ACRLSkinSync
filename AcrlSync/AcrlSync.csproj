@@ -104,6 +104,7 @@
     <Compile Include="Model\FtpService.cs" />
     <Compile Include="Model\IFtpService.cs" />
     <Compile Include="Model\Tree.cs" />
+    <Compile Include="Model\UploadFiles.cs" />
     <Compile Include="ProgressReporter.cs" />
     <Compile Include="UploadView.xaml.cs">
       <DependentUpon>UploadView.xaml</DependentUpon>

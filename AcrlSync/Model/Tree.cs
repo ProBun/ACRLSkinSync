@@ -16,38 +16,49 @@ namespace AcrlSync.Model
         public IList<Tree> children { get { return _children; } }
         public string Name { get; set; }
         public string fullName { get; set; }
+        public string Parent { get; set; }
 
-        private async void GetTree()
+        private async void GetTree(string root)
         {
-            List<List<RemoteFileInfo>> FileData = await backgroundGetTree();
+     
+            List<List<RemoteFileInfo>> FileData = await backgroundGetTree("/"+root);
 
             if (FileData == null)
             {
-                Messenger.Default.Send<NotificationMessage>(new NotificationMessage("Connection Failure"));
+                Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(root,"Connection Failure"));
                 return;
             }
 
-            this.Name = "Download";
-            this.fullName = "Download";
+            this.Name = root;
+            this.fullName = root;
             Tree parent;
+            Tree parent2 = null;
 
             foreach (var dir in FileData)
             {
                 if (dir.Count > 1)
                 {
-                    children.Add(new Tree(dir[0].Name, dir[0].FullName));
+                    children.Add(new Tree(dir[0].Name, dir[0].FullName,Name));
                     dir.Remove(dir[0]);
                     parent = children.Last();
                     foreach (var dir2 in dir)
                     {
-                        parent.children.Add(new Tree(dir2.Name, dir2.FullName));
+                        if (parent2 != null && dir2.FullName.StartsWith(parent2.fullName))
+                        {
+                            parent2.children.Add(new Tree(dir2.Name, dir2.FullName, parent2.Name));
+                        }
+                        else
+                        {
+                            parent.children.Add(new Tree(dir2.Name, dir2.FullName, parent.Name));
+                            parent2 = parent.children.Last();
+                        }
                     }
                 }
             }
-            Messenger.Default.Send<NotificationMessage>(new NotificationMessage("Tree Loaded"));
+            Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(root,"Tree Loaded"));
         }
 
-        private Task<List<List<RemoteFileInfo>>> backgroundGetTree()
+        private Task<List<List<RemoteFileInfo>>> backgroundGetTree(string root)
         {
             Task<List<List<RemoteFileInfo>>> t = new Task<List<List<RemoteFileInfo>>>(() => 
             {
@@ -60,7 +71,7 @@ namespace AcrlSync.Model
                         System.Console.WriteLine(e.Message);
                         return null;
                     }
-                    string remotePath = "/Download";
+                    string remotePath = root;
 
                     List<List<RemoteFileInfo>> allFiles = new List<List<RemoteFileInfo>>();
 
@@ -79,6 +90,15 @@ namespace AcrlSync.Model
                                 if (itemTwo.IsDirectory && itemTwo.Name != "..")
                                 {
                                     files.Add(itemTwo);
+
+                                    RemoteDirectoryInfo directoryInfoThree = session.ListDirectory(itemTwo.FullName);
+                                    foreach (RemoteFileInfo itemThree in directoryInfoThree.Files)
+                                    {
+                                        if (itemThree.IsDirectory && itemThree.Name != "..")
+                                        {
+                                            files.Add(itemThree);
+                                        }
+                                    }
                                 }
                             }
                             allFiles.Add(files);
@@ -92,15 +112,16 @@ namespace AcrlSync.Model
         }
 
 
-        public Tree()
+        public Tree(string root)
         {
-            GetTree();
+            GetTree(root);
         }
 
-        public Tree(string name, string fName)
+        public Tree(string name, string fName, string parent)
         {
             Name = name;
             fullName = fName;
+            Parent = parent;
         }
     }
 }

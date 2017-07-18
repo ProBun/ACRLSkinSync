@@ -238,7 +238,7 @@ namespace AcrlSync.ViewModel
             //_jobvm = vmLoc.jobVM;
 
             _seasons = new List<Tree>();
-            var item = new Tree();
+            var item = new Tree("Download");
             _seasons.Add(item);
 
             _options = new List<optionItem>();
@@ -289,7 +289,7 @@ namespace AcrlSync.ViewModel
             });
             */
 
-            Messenger.Default.Register<NotificationMessage>(this, (message) =>
+            Messenger.Default.Register<NotificationMessage<string>>(this, (message) =>
             {
                 /*
                 if (message.Notification == "closeJob")
@@ -302,37 +302,41 @@ namespace AcrlSync.ViewModel
                     }
                 }
                 */
-
-                if (message.Notification == "Tree Loaded")
+                if (message.Content == "Download")
                 {
-                    loading = "";
-                    treeLoaded = true;
-                    ftpLoaded = true;
-                    ftpError = "";
-
-                    List<optionItem> list = new List<optionItem>();
-                    foreach (Tree s in _seasons)
+                    if (message.Notification == "Tree Loaded")
                     {
-                        flattenTree(s,"", list);
+                        loading = "";
+                        treeLoaded = true;
+                        ftpLoaded = true;
+                        ftpError = "";
+
+                        List<optionItem> list = new List<optionItem>();
+                        foreach (Tree s in _seasons)
+                        {
+                            flattenTree(s, "", list);
+                        }
+                        options = list;
                     }
-                    options = list;
-                }
-                if (message.Notification == "Connection Failure")
-                {
-                    loading = "";
-                    treeLoaded = false;
-                    ftpLoaded = true;
-                    ftpError = "Could not Connect";
-                    string errorMessage = "Could not connect to FTP: " + ConnectionSettings.options.HostName;
-                    System.Windows.MessageBox.Show(errorMessage, "Connection Failure", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    if (message.Notification == "Connection Failure")
+                    {
+                        loading = "";
+                        treeLoaded = false;
+                        ftpLoaded = true;
+                        ftpError = "Could not Connect";
+                        string errorMessage = "Could not connect to FTP: " + ConnectionSettings.options.HostName;
+                        System.Windows.MessageBox.Show(errorMessage, "Connection Failure", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                    }
                 }
             });
             //_dataService.GetDirectoryDetails("Download");
         }
 
-        private void flattenTree(Tree input, string parent, List<optionItem> output)
+        private void flattenTree(Tree input, string parent, List<optionItem> output, int level = 0)
         {
-            if (input.children.Count == 0)
+            int maxLevel = 2;
+
+            if (level == maxLevel)
             {
                 optionItem item = new optionItem();
                 item.name = String.Format("{0} \u2013 {1}", parent, input.Name);
@@ -343,7 +347,7 @@ namespace AcrlSync.ViewModel
             else
             {
                 foreach (Tree child in input.children)
-                    flattenTree(child, input.Name, output);
+                    flattenTree(child, input.Name, output, level+1);
             }
         }
 
@@ -357,7 +361,7 @@ namespace AcrlSync.ViewModel
 
             //_jobvm.seasons = new List<Tree>();
             _seasons = new List<Tree>();
-            var item = new Tree();
+            var item = new Tree("Download");
             //_jobvm.seasons.Add(item);
             _seasons.Add(item);
 
