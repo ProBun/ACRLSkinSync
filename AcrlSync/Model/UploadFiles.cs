@@ -17,6 +17,11 @@ namespace AcrlSync.Model
         public bool isDDS { get; set; }
         public bool isCompressed { get; set; }
         public bool validSize { get; set; }
+        public bool valid { get; set; } //used for strikethrough
+        public bool missing { get; set; } //used for red
+        public bool transferable { get; set; } //used for showing upload box
+        public bool transfer { get; set; } 
+        public string error { get; set; }
 
         private static readonly string[] _validExtensions = { ".jpg", ".png", ".dds", ".ini", ".jpeg", ".json" };
 
@@ -26,14 +31,54 @@ namespace AcrlSync.Model
             this.name = Path.GetFileName(path);
             this.ext = Path.GetExtension(path);
             allowedExt = _validExtensions.Contains(this.ext);
+            missing = false;
+            valid = true;
+            transfer = true;
+            error = "";
+
+            if (allowedExt == false)
+            {
+                valid = false;
+                transfer = false;
+                error = "Invalid extension, file is not required";
+            }
+
             this.isDDS = String.Compare(this.ext, ".dds", true) == 0;
             if (this.isDDS)
             {
                 long length = new System.IO.FileInfo(path).Length;
                 this.isCompressed = length < 1e7;
+                // Console.WriteLine("length " + length.ToString());
+
+                if (isCompressed == false)
+                {
+                    valid = false;
+                    transfer = false;
+                    error = "File is too large, create DDS with DXT5 compression";
+                }
+
                 var dds = new ddsParser(path);
                 this.validSize = dds.width < 2049 && dds.height < 2049;
+
+                if (validSize == false)
+                {
+                    valid = false;
+                    transfer = false;
+                    error = "File is too large, create DDS with maximum dimension 2048px";
+                }
             }
+            transferable = valid;
+        }
+
+
+        public UploadFiles(string fName, bool missing)
+        {
+            this.name = fName;
+            this.missing = true;
+            valid = true;
+            transfer = false;
+            transferable = false;
+            error = "File is missing!";
         }
     }
 

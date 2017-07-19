@@ -13,6 +13,16 @@
         Title="ACRL Sync"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
 
+    <Window.Style>
+        <Style TargetType="Window">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding ftpLoaded}" Value="False">
+                    <Setter Property="Cursor" Value="Wait" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
+    
     <Grid x:Name="LayoutRoot">
         <DockPanel LastChildFill="True" Margin="15 10">
             <Grid DockPanel.Dock="Top">
@@ -43,7 +53,7 @@
                         />
                 <Button Grid.Column="5" Grid.Row="1" Margin="10 0 0 0" Content="_Find" Command="{Binding findClick}"/>
 
-                <Button Grid.Column="5" Grid.Row="2" Margin="10 10 0 0" Content="_Upload" Command="{Binding uploadClick}"/>
+                <Button Grid.Column="5" Grid.Row="2" Margin="10 10 0 0" Content="_Upload" Command="{Binding uploadClick}" IsEnabled="{Binding ftpLoaded}"/>
             </Grid>
             <Grid DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="0 5 0 0">
                 <Grid.RowDefinitions>

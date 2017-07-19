@@ -3,9 +3,12 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
 using GalaSoft.MvvmLight.Messaging;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using WinSCP;
 
 namespace AcrlSync.ViewModel
 {
@@ -45,9 +48,12 @@ namespace AcrlSync.ViewModel
                 RaisePropertyChanged(() => selectedSeries);
                 carList.Clear();
                 skinList.Clear();
-                foreach (Tree child in value.children)
+                if (value != null)
                 {
-                    carList.Add(child);
+                    foreach (Tree child in value.children)
+                    {
+                        carList.Add(child);
+                    }
                 }
             }
         }
@@ -61,18 +67,21 @@ namespace AcrlSync.ViewModel
                 _selectedCar = value;
                 RaisePropertyChanged(() => selectedCar);
                 skinList.Clear();
-                string path = _acRoot + @"\content\cars\" + value.Name + @"\skins\";
-                if (!Directory.Exists(path))
+                if (value != null)
                 {
-                    string errorMessage = "Could not find folder: " + path;
-                    System.Windows.MessageBox.Show(errorMessage, "Error in AC Folder", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                    return;
-                }
-                
-                var skinDirs = Directory.GetDirectories(path).Select(f => Path.GetFileName(f)); 
-                foreach (string dir in skinDirs)
-                {
-                    skinList.Add(new Tree(dir,path+dir,path));
+                    string path = _acRoot + @"\content\cars\" + value.Name + @"\skins\";
+                    if (!Directory.Exists(path))
+                    {
+                        string errorMessage = "Could not find folder: " + path;
+                        System.Windows.MessageBox.Show(errorMessage, "Error in AC Folder", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        return;
+                    }
+
+                    var skinDirs = Directory.GetDirectories(path).Select(f => Path.GetFileName(f));
+                    foreach (string dir in skinDirs)
+                    {
+                        skinList.Add(new Tree(dir, path + dir, path));
+                    }
                 }
             }
         }
@@ -84,8 +93,12 @@ namespace AcrlSync.ViewModel
             set
             {
                 _selectedSkin = value;
+                filesToUpload.Clear();
                 RaisePropertyChanged(() => selectedCar);
                 RaisePropertyChanged(() => evaluateAllowed);
+
+                if (value != null)
+                    evaluateCarFolder();
             }
         }
 
@@ -94,13 +107,41 @@ namespace AcrlSync.ViewModel
             get { return treeLoaded && _selectedSkin != null; }
         }
 
+        private bool _uploadEnabled = true;
+        public bool uploadEnabled
+        {
+            get { return _uploadEnabled; }
+            set
+            {
+                _uploadEnabled = value;
+                RaisePropertyChanged(() => uploadEnabled);
+            }
+        }
+
         public RelayCommand evaluateClick { get; set; }
+        public RelayCommand uploadClick { get; set; }
 
         public ObservableCollection<UploadFiles> filesToUpload { get; set; }
 
         private Tree tree;
         private bool treeLoaded = false;
-        private bool ftpLoaded = false;
+        private bool _ftpLoaded = false;
+        public bool ftpLoaded
+        {
+            get { return _ftpLoaded; }
+            set
+            {
+                _ftpLoaded = value;
+                RaisePropertyChanged(() => ftpLoaded);
+            }
+        }
+
+        private string _log;
+        public string log
+        {
+            get { return _log; }
+            set { _log = value; RaisePropertyChanged(() => log); }
+        }
 
         private string _acRoot;
 
@@ -110,8 +151,6 @@ namespace AcrlSync.ViewModel
         public uploadSkinVM()
         {
 
-            tree = new Tree("Upload");
-
             filesToUpload = new ObservableCollection<UploadFiles>();
 
             _seriesList = new ObservableCollection<Tree>();
@@ -119,6 +158,7 @@ namespace AcrlSync.ViewModel
             _skinList = new ObservableCollection<Tree>();
 
             evaluateClick = new RelayCommand(evaluateCarFolder);
+            uploadClick = new RelayCommand(upload);
 
             Messenger.Default.Register<NotificationMessage<string>>(this, (message) =>
             {
@@ -153,6 +193,12 @@ namespace AcrlSync.ViewModel
                 if (message.Notification == "upload")
                 {
                     _acRoot = message.Content;
+                    treeLoaded = false;
+                    ftpLoaded = false;
+                    tree = new Tree("Upload");
+                    seriesList.Clear();
+                    carList.Clear();
+                    skinList.Clear();
                 }
             });
 
@@ -162,10 +208,94 @@ namespace AcrlSync.ViewModel
         {
             filesToUpload.Clear();
             string folder = selectedSkin.fullName;
-            string[] files= Directory.GetFiles(folder);
+            string[] files = Directory.GetFiles(folder);
             foreach (string file in files)
             {
                 filesToUpload.Add(new UploadFiles(file));
+            }
+            checkForFile(filesToUpload, "preview.jpg");
+            checkForFile(filesToUpload, "livery.png");
+            checkForFile(filesToUpload, "ui_skin.json");
+        }
+
+        private void checkForFile(ObservableCollection<UploadFiles> files, string file)
+        {
+            if (files.Any(x => string.Compare(x.name, file, true) == 0) == false)
+            {
+                files.Add(new UploadFiles(file, true));
+            }
+        }
+
+        private async void upload()
+        {
+            uploadEnabled = false;
+            log += "***************************\n";
+            log += "****     UPLOADING     ****\n";
+            log += "***************************\n";
+            await uploadToFtp(filesToUpload);
+            log += "***************************\n";
+            log += "****     COMPLETED     ****\n";
+            log += "***************************\n";
+            uploadEnabled = true;
+        }
+
+        private Task uploadToFtp(ObservableCollection<UploadFiles> files)
+        {
+            var progressReporter = new ProgressReporter();
+            Task t = new Task(() => BackgroundUpload(files, progressReporter));
+            t.Start();
+            return t;
+        }
+
+        private void BackgroundUpload(ObservableCollection<UploadFiles> files, ProgressReporter reporter)
+        {
+            if (files.Count < 1)
+                return;
+            string remotePath = selectedCar.fullName + @"/skins/" + selectedSkin.Name;
+
+            using (Session session = new Session())
+            {
+                try
+                { session.Open(ConnectionSettings.options); }
+                catch (WinSCP.SessionRemoteException e)
+                {
+                    System.Console.WriteLine(e.Message);
+                    return;
+                }
+
+                TransferOptions transferOptions = new TransferOptions();
+                List<TransferOperationResult> transferResults = new List<TransferOperationResult>();
+                TransferOperationResult transferResult;
+                foreach (UploadFiles file in files)
+                {
+                    if (file.transfer == true)
+                    {
+                        Console.WriteLine(string.Format("Uploading {0} to {1}", file.fullname, remotePath + @"/" + file.name));
+                        transferResult = session.PutFiles(file.fullname, remotePath+@"/"+file.name, false, transferOptions);
+
+                        //log results
+                        if (transferResult.IsSuccess)
+                        {
+                            foreach (TransferEventArgs transfer in transferResult.Transfers)
+                            {
+                                reporter.ReportProgressAsync(() =>
+                                {
+                                    log += string.Format("Uploaded: {0}\n", file.name);
+                                });
+                            }
+                        }
+                        else
+                        {
+                            foreach (TransferEventArgs transfer in transferResult.Transfers)
+                            {
+                                reporter.ReportProgressAsync(() =>
+                                {
+                                    log += string.Format("Error: {0}\n\t{1}\n", file.name, transfer.Error);
+                                });
+                            }
+                        }
+                    }
+                }
             }
         }
     }

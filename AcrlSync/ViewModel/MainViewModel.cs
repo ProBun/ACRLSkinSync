@@ -359,6 +359,8 @@ namespace AcrlSync.ViewModel
             ftpLoaded = false;
             ftpError = "Connecting";
 
+            options = new List<optionItem>();
+
             //_jobvm.seasons = new List<Tree>();
             _seasons = new List<Tree>();
             var item = new Tree("Download");
