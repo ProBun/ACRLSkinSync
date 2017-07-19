@@ -22,10 +22,15 @@ namespace AcrlSync.Model
     
     static public class Jobs
     {
-        static public string acCarsPath = "acPath";
-        static public void setPath(string path)
+        static public string acCarsPath = "acCarPath";
+        static public void setCarsPath(string path)
         {
             acCarsPath = path;
+        }
+        static public string acPath = "acPath";
+        static public void setPath(string path)
+        {
+            acPath = path;
         }
         //public IList<string> ftpPath { get; set; }
     }

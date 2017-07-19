@@ -120,6 +120,7 @@ namespace AcrlSync.ViewModel
 
         public RelayCommand evaluateClick { get; set; }
         public RelayCommand uploadClick { get; set; }
+        public RelayCommand backClick { get; set; }
 
         public ObservableCollection<UploadFiles> filesToUpload { get; set; }
 
@@ -159,6 +160,7 @@ namespace AcrlSync.ViewModel
 
             evaluateClick = new RelayCommand(evaluateCarFolder);
             uploadClick = new RelayCommand(upload);
+            backClick = new RelayCommand(back);
 
             Messenger.Default.Register<NotificationMessage<string>>(this, (message) =>
             {
@@ -226,6 +228,11 @@ namespace AcrlSync.ViewModel
             }
         }
 
+        private void back()
+        {
+            Messenger.Default.Send<NotificationMessage>(new NotificationMessage("Switch View"));
+        }
+
         private async void upload()
         {
             uploadEnabled = false;
@@ -270,7 +277,7 @@ namespace AcrlSync.ViewModel
                 {
                     if (file.transfer == true)
                     {
-                        Console.WriteLine(string.Format("Uploading {0} to {1}", file.fullname, remotePath + @"/" + file.name));
+                        //Console.WriteLine(string.Format("Uploading {0} to {1}", file.fullname, remotePath + @"/" + file.name));
                         transferResult = session.PutFiles(file.fullname, remotePath+@"/"+file.name, false, transferOptions);
 
                         //log results

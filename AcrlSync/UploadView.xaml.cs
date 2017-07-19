@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Navigation;
 
@@ -10,7 +11,7 @@ namespace AcrlSync
     /// <summary>
     /// Description for UploadView.
     /// </summary>
-    public partial class UploadView : Window
+    public partial class UploadView : UserControl
     {
         /// <summary>
         /// Initializes a new instance of the UploadView class.
@@ -18,11 +19,6 @@ namespace AcrlSync
         public UploadView()
         {
             InitializeComponent();
-        }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
         }
 
         private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
@@ -53,7 +49,7 @@ namespace AcrlSync
 
         public object Convert(object value, Type targetType, object para, CultureInfo culture)
         {
-            Console.WriteLine(value.ToString());
+            // Console.WriteLine(value.ToString());
             if ((bool)value == false)
                 return "black";
             else return "red";
@@ -70,7 +66,7 @@ namespace AcrlSync
 
         public object Convert(object value, Type targetType, object para, CultureInfo culture)
         {
-            Console.WriteLine(value.ToString());
+            // Console.WriteLine(value.ToString());
             if ((bool)value == false)
                 return "Hidden";
             else return "Visible";

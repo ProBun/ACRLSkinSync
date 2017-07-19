@@ -97,6 +97,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="DownloadView.xaml.cs">
+      <DependentUpon>DownloadView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="jobView.xaml.cs">
       <DependentUpon>jobView.xaml</DependentUpon>
     </Compile>
@@ -109,10 +112,15 @@
     <Compile Include="UploadView.xaml.cs">
       <DependentUpon>UploadView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\DownloadVM.cs" />
     <Compile Include="ViewModel\jobVM.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\uploadSkinVM.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Page Include="DownloadView.xaml">
+      <SubType>Form</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="jobView.xaml">
       <SubType>Form</SubType>
       <Generator>MSBuild:Compile</Generator>

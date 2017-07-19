@@ -33,6 +33,7 @@ namespace AcrlSync.ViewModel
             SimpleIoc.Default.Register<MainViewModel>();
             SimpleIoc.Default.Register<jobVM>();
             SimpleIoc.Default.Register<uploadSkinVM>();
+            SimpleIoc.Default.Register<DownloadVM>();
         }
 
         /// <summary>
@@ -60,6 +61,13 @@ namespace AcrlSync.ViewModel
             get
             {
                 return ServiceLocator.Current.GetInstance<uploadSkinVM>();
+            }
+        }
+        public DownloadVM downloadVM
+        {
+            get
+            {
+                return ServiceLocator.Current.GetInstance<DownloadVM>();
             }
         }
         /// <summary>
