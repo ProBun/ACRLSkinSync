@@ -234,9 +234,7 @@ namespace AcrlSync.ViewModel
             _acPath = Jobs.acCarsPath;
 
             loadConnectionJson();
-            string path = AppDomain.CurrentDomain.BaseDirectory;
-            string json = System.IO.File.ReadAllText(path + "/acPath.json");
-            _acPath = JsonConvert.DeserializeObject<String>(json);
+            loadPathJson();
 
             //find jobVM so it can be intialised and start async call to populate tree
             //ViewModelLocator vmLoc = new ViewModelLocator();
@@ -420,6 +418,7 @@ namespace AcrlSync.ViewModel
             string json = JsonConvert.SerializeObject(ConnectionSettings.options, Formatting.Indented);
             System.IO.File.WriteAllText(path + "/connection.json", json);
         }
+
         private void loadConnectionJson()
         {
             try
@@ -433,9 +432,23 @@ namespace AcrlSync.ViewModel
                 ConnectionSettings.options.Password = temp.Password;
                 _ftpAddress = temp.HostName;
             }
-            catch
+            catch (FileNotFoundException)
             {
-                //dont need to do anything
+                saveConnectionJson();
+            }
+        }
+
+        private void loadPathJson()
+        {
+            try
+            {
+                string path = AppDomain.CurrentDomain.BaseDirectory;
+                string json = System.IO.File.ReadAllText(path + "/acPath.json");
+                _acPath = JsonConvert.DeserializeObject<String>(json);
+            }
+            catch(FileNotFoundException)
+            {
+                _acPath = "";
             }
         }
 

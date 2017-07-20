@@ -7,10 +7,10 @@
         xmlns:local="clr-namespace:AcrlSync"
         xmlns:vm="clr-namespace:AcrlSync.ViewModel"
         mc:Ignorable="d ignore"
-        Width="720"
-        MinWidth="720"
-        Height="480"
-        MinHeight="240"
+        Width="800"
+        MinWidth="800"
+        Height="600"
+        MinHeight="480"
         Title="ACRL Sync"
         DataContext="{Binding Main, Source={StaticResource Locator}}">
 

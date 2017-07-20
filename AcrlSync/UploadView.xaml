@@ -82,6 +82,7 @@
                     </BulletDecorator.Bullet>
                     <TextBlock Text="Files must not exceed 2048 px in either dimension" Margin="5 -1"/>
                 </BulletDecorator>
+                <TextBlock Text="Files reported as missing are recommended but not required" Margin="0 4 0 0"/>
             </StackPanel>
         </Grid>
         
@@ -126,7 +127,7 @@
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="{Binding name}" TextDecorations="{Binding valid, Converter={StaticResource DecCon}}" Foreground="{Binding missing, Converter={StaticResource ColCon}}"/>
-                            <TextBlock Grid.Column="1" Text="{Binding error}" Margin="50 0"/>
+                            <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding error}" Margin="20 0"/>
                             <WrapPanel Grid.Column="2" HorizontalAlignment="Right" Visibility="{Binding transferable, Converter={StaticResource TranCon}}">
                                 <TextBlock  Text="Upload: "/>
                                 <CheckBox  IsChecked="{Binding transfer}"/>

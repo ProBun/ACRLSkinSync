@@ -40,7 +40,7 @@ namespace AcrlSync.Model
             {
                 valid = false;
                 transfer = false;
-                error = "Invalid extension, file is not required";
+                error = "Invalid ext";
             }
 
             this.isDDS = String.Compare(this.ext, ".dds", true) == 0;
@@ -54,7 +54,7 @@ namespace AcrlSync.Model
                 {
                     valid = false;
                     transfer = false;
-                    error = "File is too large, create DDS with DXT5 compression";
+                    error = "Too large";
                 }
 
                 var dds = new ddsParser(path);
@@ -64,7 +64,7 @@ namespace AcrlSync.Model
                 {
                     valid = false;
                     transfer = false;
-                    error = "File is too large, create DDS with maximum dimension 2048px";
+                    error = "Exceeds 2048px";
                 }
             }
             transferable = valid;
