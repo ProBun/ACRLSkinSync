@@ -547,6 +547,12 @@ namespace AcrlSync.ViewModel
             return t;
         }
 
+        /// <summary>
+        /// Creates an AnalysisItem with all the files that need to be downloaded.
+        /// </summary>
+        /// <param name="job">The selection of folders to analyse</param>
+        /// <param name="reporter">Where we will post our output messages</param>
+        /// <returns></returns>
         private AnalysisItem BackgroundAnalyse(JobItem job, ProgressReporter reporter)
         {
             AnalysisItem data = new AnalysisItem();
@@ -556,8 +562,13 @@ namespace AcrlSync.ViewModel
             this.cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = this.cancellationTokenSource.Token;
 
+            RemoteDirectoryInfo carInfo; // WinSCP API object that represents a list of car folders.
+            RemoteDirectoryInfo skinInfo; // WinSCP API object that represents the contents of the car/skins folder.
+            RemoteDirectoryInfo skinFiles; // WinSCP API object that represents the contents of a skin folder.
+
             using (Session session = new Session())
             {
+                // Connect to the FTP.
                 try
                 { session.Open(ConnectionSettings.options); }
                 catch (WinSCP.SessionRemoteException e)
@@ -569,7 +580,17 @@ namespace AcrlSync.ViewModel
                 string localPath = job.acCarsPath;
                 foreach (string remotePath in job.ftpPath)
                 {
-                    RemoteDirectoryInfo carInfo = session.ListDirectory(remotePath);
+                    // Open the folder for the series and get the list of car folders.
+                    try {
+                        carInfo = session.ListDirectory(remotePath);
+                    }
+                    catch (WinSCP.SessionRemoteException e) {
+                        log += string.Format("{0}\n", e.Message);
+                        System.Console.WriteLine(e.Message);
+                        continue;
+                    }
+                    
+                    // Iterate over the cars.
                     foreach (RemoteFileInfo car in carInfo.Files)
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -580,12 +601,27 @@ namespace AcrlSync.ViewModel
                             {
                                 log += string.Format("Car: {0}\n", car.Name);
                             });
+
+                            // Navigate to the skins folder and get a list its contents
                             localPath = Path.Combine(job.acCarsPath, car.Name, "skins");
-                            RemoteDirectoryInfo skinInfo = session.ListDirectory(car.FullName + "/skins");
+                            try {
+                                skinInfo = session.ListDirectory(car.FullName + "/skins");
+                            }
+                            catch (WinSCP.SessionRemoteException e) {
+                                // No Skins folder! Issue lies with the file struct on server.
+                                // Tell user to inform a moderator.
+                                log += string.Format("Error: {0} could not access skins folder. Skipping car, please inform a moderator.\n", car.Name);
+                                System.Console.WriteLine(e.Message);
+                                continue;
+                            }
+                            
+                            // Iterate over the skins.
                             foreach (RemoteFileInfo skinDir in skinInfo.Files)
                             {
                                 if (cancellationToken.IsCancellationRequested)
                                     return data;
+
+                                // Only interested in the directories.
                                 if (skinDir.IsDirectory && skinDir.Name != "..")
                                 {
                                     reporter.ReportProgressAsync(() =>
@@ -595,6 +631,7 @@ namespace AcrlSync.ViewModel
                                     localPath = Path.Combine(job.acCarsPath, car.Name, "skins", skinDir.Name);
                                     if (!Directory.Exists(localPath))
                                     {
+                                        // Skin does not exist on users system, mark all files for download.
                                         reporter.ReportProgressAsync(() =>
                                         {
                                             log += string.Format("Not found in cars folder\n");
@@ -603,7 +640,13 @@ namespace AcrlSync.ViewModel
                                         skin.name = skinDir.Name;
                                         skin.car = car.Name;
                                         data.skinCount += 1;
-                                        RemoteDirectoryInfo skinFiles = session.ListDirectory(skinDir.FullName);
+                                        try { // Don't think this one can actually fail. As listing contents of dir we know exists.
+                                            skinFiles = session.ListDirectory(skinDir.FullName);
+                                        }
+                                        catch (WinSCP.SessionRemoteException e) {
+                                            System.Console.WriteLine(e.Message);
+                                            continue;
+                                        }
                                         List<RemoteFileInfo> files = new List<RemoteFileInfo>();
                                         foreach (RemoteFileInfo file in skinFiles.Files)
                                         {
@@ -631,7 +674,8 @@ namespace AcrlSync.ViewModel
                                     }
                                     else
                                     {
-                                        RemoteDirectoryInfo skinFiles = session.ListDirectory(skinDir.FullName);
+                                        // Skin exists on users system check each file in turn.
+                                        skinFiles = session.ListDirectory(skinDir.FullName);
                                         List<RemoteFileInfo> files = new List<RemoteFileInfo>();
                                         foreach (RemoteFileInfo file in skinFiles.Files)
                                         {
