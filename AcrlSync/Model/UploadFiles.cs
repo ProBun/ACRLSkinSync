@@ -30,7 +30,7 @@ namespace AcrlSync.Model
             this.fullname = path;
             this.name = Path.GetFileName(path);
             this.ext = Path.GetExtension(path);
-            allowedExt = _validExtensions.Contains(this.ext);
+            allowedExt = _validExtensions.Contains(this.ext.ToLower());
             missing = false;
             valid = true;
             transfer = true;
