@@ -18,18 +18,18 @@ namespace AcrlSync.ViewModel
         private readonly IFtpService _dataService;
 
         private ViewModelBase _currentVM;
-        public ViewModelBase currentVM
+        public ViewModelBase CurrentVM
         {
             get { return _currentVM; }
             set
             {
                 _currentVM = value;
-                RaisePropertyChanged(() => currentVM);
+                RaisePropertyChanged(() => CurrentVM);
             }
         }
 
-        private DownloadVM _dLoadVM;
-        private uploadSkinVM _uploadVM;
+        private readonly DownloadVM downloadVM;
+        private readonly UploadSkinVM uploadVM;
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
@@ -38,17 +38,17 @@ namespace AcrlSync.ViewModel
         {
             _dataService = dataService;
             ViewModelLocator locator = (App.Current.Resources["Locator"] as ViewModelLocator);
-            _dLoadVM = locator.downloadVM;
-            _uploadVM = locator.uploadVM;
+            downloadVM = locator.DownloadVM;
+            uploadVM = locator.UploadVM;
 
-            _currentVM = _dLoadVM;
+            _currentVM = downloadVM;
 
             Messenger.Default.Register<NotificationMessage<string>>(this, (message) =>
             {
                 if (message.Notification == "uploadSkin Show")
                 {
                     Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(message.Content, "upload"));
-                    switchVM();
+                    SwitchVM();
                 }
             });
 
@@ -56,17 +56,17 @@ namespace AcrlSync.ViewModel
             {
                 if (message.Notification == "Switch View")
                 {
-                    switchVM();
+                    SwitchVM();
                 }
             });
         }
 
-        private void switchVM()
+        private void SwitchVM()
         {
-            if (currentVM == _dLoadVM)
-                currentVM = _uploadVM;
+            if (CurrentVM == downloadVM)
+                CurrentVM = uploadVM;
             else
-                currentVM = _dLoadVM;
+                CurrentVM = downloadVM;
         }
     }
 }

@@ -13,44 +13,44 @@ namespace AcrlSync.Model
     {
 
         readonly List<Tree> _children = new List<Tree>();
-        public IList<Tree> children { get { return _children; } }
+        public IList<Tree> Children { get { return _children; } }
         public string Name { get; set; }
-        public string fullName { get; set; }
+        public string FullName { get; set; }
         public string Parent { get; set; }
 
         private async void GetTree(string root)
         {
      
-            List<List<RemoteFileInfo>> FileData = await backgroundGetTree("/"+root);
+            List<List<RemoteFileInfo>> fileData = await BackgroundGetTree("/"+root);
 
-            if (FileData == null)
+            if (fileData == null)
             {
                 Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(root,"Connection Failure"));
                 return;
             }
 
-            this.Name = root;
-            this.fullName = root;
+            Name = root;
+            FullName = root;
             Tree parent;
             Tree parent2 = null;
 
-            foreach (var dir in FileData)
+            foreach (var dir in fileData)
             {
                 if (dir.Count > 1)
                 {
-                    children.Add(new Tree(dir[0].Name, dir[0].FullName,Name));
+                    Children.Add(new Tree(dir[0].Name, dir[0].FullName,Name));
                     dir.Remove(dir[0]);
-                    parent = children.Last();
+                    parent = Children.Last();
                     foreach (var dir2 in dir)
                     {
-                        if (parent2 != null && dir2.FullName.StartsWith(parent2.fullName))
+                        if (parent2 != null && dir2.FullName.StartsWith(parent2.FullName))
                         {
-                            parent2.children.Add(new Tree(dir2.Name, dir2.FullName, parent2.Name));
+                            parent2.Children.Add(new Tree(dir2.Name, dir2.FullName, parent2.Name));
                         }
                         else
                         {
-                            parent.children.Add(new Tree(dir2.Name, dir2.FullName, parent.Name));
-                            parent2 = parent.children.Last();
+                            parent.Children.Add(new Tree(dir2.Name, dir2.FullName, parent.Name));
+                            parent2 = parent.Children.Last();
                         }
                     }
                 }
@@ -58,14 +58,14 @@ namespace AcrlSync.Model
             Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(root,"Tree Loaded"));
         }
 
-        private Task<List<List<RemoteFileInfo>>> backgroundGetTree(string root)
+        private Task<List<List<RemoteFileInfo>>> BackgroundGetTree(string root)
         {
             Task<List<List<RemoteFileInfo>>> t = new Task<List<List<RemoteFileInfo>>>(() => 
             {
                 using (Session session = new Session())
                 {
                     try
-                    { session.Open(ConnectionSettings.options); }
+                    { session.Open(ConnectionSettings.Options); }
                     catch(WinSCP.SessionRemoteException e)
                     {
                         System.Console.WriteLine(e.Message);
@@ -117,10 +117,10 @@ namespace AcrlSync.Model
             GetTree(root);
         }
 
-        public Tree(string name, string fName, string parent)
+        public Tree(string name, string fullName, string parent)
         {
             Name = name;
-            fullName = fName;
+            FullName = fullName;
             Parent = parent;
         }
     }

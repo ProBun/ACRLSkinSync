@@ -15,14 +15,13 @@
         DataContext="{Binding Main, Source={StaticResource Locator}}">
 
     <Window.Resources>
-        <DataTemplate DataType="{x:Type vm:uploadSkinVM}">
+        <DataTemplate DataType="{x:Type vm:UploadSkinVM}">
             <local:UploadView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:DownloadVM}">
             <local:DownloadView />
         </DataTemplate>
     </Window.Resources>
-    
-    <ContentControl Content="{Binding currentVM}" />
+    <ContentControl Content="{Binding CurrentVM}" />
 
 </Window>

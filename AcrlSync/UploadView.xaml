@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="d ignore"
-        DataContext="{Binding uploadVM, Source={StaticResource Locator}}"
+        DataContext="{Binding UploadVM, Source={StaticResource Locator}}"
         xmlns:local="clr-namespace:AcrlSync"
         >
 
@@ -18,13 +18,13 @@
     <UserControl.Style>
         <Style TargetType="UserControl">
             <Style.Triggers>
-                <DataTrigger Binding="{Binding ftpLoaded}" Value="False">
+                <DataTrigger Binding="{Binding FtpLoaded}" Value="False">
                     <Setter Property="Cursor" Value="Wait" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
     </UserControl.Style>
-    
+
     <DockPanel LastChildFill="True" Margin="15 10">
         <Grid DockPanel.Dock="Top">
             <Grid.RowDefinitions>
@@ -39,7 +39,7 @@
                 <ColumnDefinition Width="1.3*"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Grid.Row="0" FontWeight="Bold" Text="Series" VerticalAlignment="Center"/>
-            <ComboBox Grid.Column="1" Grid.Row="0" ItemsSource="{Binding seriesList}" SelectedItem="{Binding selectedSeries}">
+            <ComboBox Grid.Column="1" Grid.Row="0" ItemsSource="{Binding SeriesList}" SelectedItem="{Binding SelectedSeries}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock>
@@ -56,12 +56,10 @@
 
 
             <TextBlock Grid.Column="0" Grid.Row="1" FontWeight="Bold" Margin="0 10 0 0" Text="Car" VerticalAlignment="Center"/>
-            <ComboBox Grid.Column="1" Grid.Row="1" Margin="0 10 0 0" ItemsSource="{Binding carList}" DisplayMemberPath="Name" SelectedItem="{Binding selectedCar}"/>
+            <ComboBox Grid.Column="1" Grid.Row="1" Margin="0 10 0 0" ItemsSource="{Binding CarList}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedCar}"/>
 
             <TextBlock Grid.Column="0" Grid.Row="2" FontWeight="Bold" Margin="0 10 0 0" Text="Skin" VerticalAlignment="Center"/>
-            <ComboBox Grid.Column="1" Grid.Row="2" Margin="0 10 0 0" ItemsSource="{Binding skinList}"  SelectedItem="{Binding selectedSkin}" DisplayMemberPath="Name"/>
-
-            <!--<Button Grid.Column="2" Grid.Row="2" Margin="10 10 0 0" Content="_Evaluate" Command="{Binding evaluateClick}" IsEnabled="{Binding evaluateAllowed}"/>-->
+            <ComboBox Grid.Column="1" Grid.Row="2" Margin="0 10 0 0" ItemsSource="{Binding SkinList}"  SelectedItem="{Binding SelectedSkin}" DisplayMemberPath="Name"/>
 
             <WrapPanel Grid.Column="3">
                 <TextBlock Text="Don't forget to fill in the "/>
@@ -85,17 +83,17 @@
                 <TextBlock Text="Files reported as missing are recommended but not required" Margin="0 4 0 0"/>
             </StackPanel>
         </Grid>
-        
+
         <Grid DockPanel.Dock="Bottom" Margin="0 10 0 0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="80"/>
                 <ColumnDefinition Width="*" MinWidth="5"/>
                 <ColumnDefinition Width="80"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0"  Margin="0 0 10 0" Content="Back" Command="{Binding backClick}"/>
-            <Button Grid.Column="2" Margin="10 0 0 0" Content="Upload" Command="{Binding uploadClick}" IsEnabled="{Binding uploadEnabled}"/>
+            <Button Grid.Column="0"  Margin="0 0 10 0" Content="Back" Command="{Binding BackClick}"/>
+            <Button Grid.Column="2" Margin="10 0 0 0" Content="Upload" Command="{Binding UploadClick}" IsEnabled="{Binding UploadEnabled}"/>
         </Grid>
-        
+
         <Grid Margin="0 10 0 0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -106,18 +104,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Row="0" Grid.Column="0" Text="Skin Files" FontWeight="Bold"/>
-            <ListView Grid.Column="0" Grid.Row="1" Margin="0 0 5 0" HorizontalContentAlignment="Stretch" ItemsSource="{Binding filesToUpload}" Grid.IsSharedSizeScope="True">
-                <!--<ListView.Resources>
-                    <Style TargetType="GridViewColumnHeader">
-                        <Setter Property="Visibility" Value="Collapsed" />
-                    </Style>
-                </ListView.Resources>
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Width="Auto" DisplayMemberBinding="{Binding name}"/>
-                        <GridViewColumn Width="Auto" DisplayMemberBinding="{Binding error}"/>
-                    </GridView>
-                </ListView.View>-->
+            <ListView Grid.Column="0" Grid.Row="1" Margin="0 0 5 0" HorizontalContentAlignment="Stretch" ItemsSource="{Binding FilesToUpload}" Grid.IsSharedSizeScope="True">
                 <ListView.ItemTemplate >
                     <DataTemplate>
                         <Grid>
@@ -126,21 +113,18 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding name}" TextDecorations="{Binding valid, Converter={StaticResource DecCon}}" Foreground="{Binding missing, Converter={StaticResource ColCon}}"/>
-                            <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding error}" Margin="20 0"/>
-                            <WrapPanel Grid.Column="2" HorizontalAlignment="Right" Visibility="{Binding transferable, Converter={StaticResource TranCon}}">
+                            <TextBlock Grid.Column="0" Text="{Binding Name}" TextDecorations="{Binding Valid, Converter={StaticResource DecCon}}" Foreground="{Binding Missing, Converter={StaticResource ColCon}}"/>
+                            <TextBlock Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding Error}" Margin="20 0"/>
+                            <WrapPanel Grid.Column="2" HorizontalAlignment="Right" Visibility="{Binding Transferable, Converter={StaticResource TranCon}}">
                                 <TextBlock  Text="Upload: "/>
-                                <CheckBox  IsChecked="{Binding transfer}"/>
+                                <CheckBox  IsChecked="{Binding Transfer}"/>
                             </WrapPanel>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
             <TextBlock Margin="5 0 0 0" Grid.Row="0" Grid.Column="1" Text="Log" FontWeight="Bold"/>
-            <local:ScrollingTextBox Grid.Row="1" Grid.Column="1" Margin="5 0 0 0" IsReadOnly="True" VerticalScrollBarVisibility="Visible" FontFamily="Consolas" TextWrapping="Wrap" Text="{Binding log, UpdateSourceTrigger=PropertyChanged}"/>
+            <local:ScrollingTextBox Grid.Row="1" Grid.Column="1" Margin="5 0 0 0" IsReadOnly="True" VerticalScrollBarVisibility="Visible" FontFamily="Consolas" TextWrapping="Wrap" Text="{Binding Log, UpdateSourceTrigger=PropertyChanged}"/>
         </Grid>
-
-        
     </DockPanel>
-
 </UserControl>

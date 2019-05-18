@@ -18,55 +18,55 @@ namespace AcrlSync.ViewModel
     /// See http://www.galasoft.ch/mvvm
     /// </para>
     /// </summary>
-    public class uploadSkinVM : ViewModelBase
+    public class UploadSkinVM : ViewModelBase
     {
-        private ObservableCollection<Tree> _seriesList;
-        public ObservableCollection<Tree> seriesList
+        private readonly ObservableCollection<Tree> _seriesList;
+        public ObservableCollection<Tree> SeriesList
         {
             get { return _seriesList; }
         }
 
-        private ObservableCollection<Tree> _carList;
-        public ObservableCollection<Tree> carList
+        private readonly ObservableCollection<Tree> _carList;
+        public ObservableCollection<Tree> CarList
         {
             get { return _carList; }
         }
 
-        private ObservableCollection<Tree> _skinList;
-        public ObservableCollection<Tree> skinList
+        private readonly ObservableCollection<Tree> _skinList;
+        public ObservableCollection<Tree> SkinList
         {
             get { return _skinList; }
         }
 
         private Tree _selectedSeries;
-        public Tree selectedSeries
+        public Tree SelectedSeries
         {
             get { return _selectedSeries; }
             set
             {
                 _selectedSeries = value;
-                RaisePropertyChanged(() => selectedSeries);
-                carList.Clear();
-                skinList.Clear();
+                RaisePropertyChanged(() => SelectedSeries);
+                CarList.Clear();
+                SkinList.Clear();
                 if (value != null)
                 {
-                    foreach (Tree child in value.children)
+                    foreach (Tree child in value.Children)
                     {
-                        carList.Add(child);
+                        CarList.Add(child);
                     }
                 }
             }
         }
 
         private Tree _selectedCar;
-        public Tree selectedCar
+        public Tree SelectedCar
         {
             get { return _selectedCar; }
             set
             {
                 _selectedCar = value;
-                RaisePropertyChanged(() => selectedCar);
-                skinList.Clear();
+                RaisePropertyChanged(() => SelectedCar);
+                SkinList.Clear();
                 if (value != null)
                 {
                     string path = _acRoot + @"\content\cars\" + value.Name + @"\skins\";
@@ -80,68 +80,68 @@ namespace AcrlSync.ViewModel
                     var skinDirs = Directory.GetDirectories(path).Select(f => Path.GetFileName(f));
                     foreach (string dir in skinDirs)
                     {
-                        skinList.Add(new Tree(dir, path + dir, path));
+                        SkinList.Add(new Tree(dir, path + dir, path));
                     }
                 }
             }
         }
 
         private Tree _selectedSkin;
-        public Tree selectedSkin
+        public Tree SelectedSkin
         {
             get { return _selectedSkin; }
             set
             {
                 _selectedSkin = value;
-                filesToUpload.Clear();
-                RaisePropertyChanged(() => selectedCar);
-                RaisePropertyChanged(() => evaluateAllowed);
+                FilesToUpload.Clear();
+                RaisePropertyChanged(() => SelectedCar);
+                RaisePropertyChanged(() => EvaluateAllowed);
 
                 if (value != null)
-                    evaluateCarFolder();
+                    EvaluateCarFolder();
             }
         }
 
-        public bool evaluateAllowed
+        public bool EvaluateAllowed
         {
             get { return treeLoaded && _selectedSkin != null; }
         }
 
         private bool _uploadEnabled = true;
-        public bool uploadEnabled
+        public bool UploadEnabled
         {
             get { return _uploadEnabled; }
             set
             {
                 _uploadEnabled = value;
-                RaisePropertyChanged(() => uploadEnabled);
+                RaisePropertyChanged(() => UploadEnabled);
             }
         }
 
-        public RelayCommand evaluateClick { get; set; }
-        public RelayCommand uploadClick { get; set; }
-        public RelayCommand backClick { get; set; }
+        public RelayCommand EvaluateClick { get; set; }
+        public RelayCommand UploadClick { get; set; }
+        public RelayCommand BackClick { get; set; }
 
-        public ObservableCollection<UploadFiles> filesToUpload { get; set; }
+        public ObservableCollection<UploadFiles> FilesToUpload { get; set; }
 
         private Tree tree;
         private bool treeLoaded = false;
         private bool _ftpLoaded = false;
-        public bool ftpLoaded
+        public bool FtpLoaded
         {
             get { return _ftpLoaded; }
             set
             {
                 _ftpLoaded = value;
-                RaisePropertyChanged(() => ftpLoaded);
+                RaisePropertyChanged(() => FtpLoaded);
             }
         }
 
         private string _log;
-        public string log
+        public string Log
         {
             get { return _log; }
-            set { _log = value; RaisePropertyChanged(() => log); }
+            set { _log = value; RaisePropertyChanged(() => Log); }
         }
 
         private string _acRoot;
@@ -149,18 +149,18 @@ namespace AcrlSync.ViewModel
         /// <summary>
         /// Initializes a new instance of the uploadSkinVM class.
         /// </summary>
-        public uploadSkinVM()
+        public UploadSkinVM()
         {
 
-            filesToUpload = new ObservableCollection<UploadFiles>();
+            FilesToUpload = new ObservableCollection<UploadFiles>();
 
             _seriesList = new ObservableCollection<Tree>();
             _carList = new ObservableCollection<Tree>();
             _skinList = new ObservableCollection<Tree>();
 
-            evaluateClick = new RelayCommand(evaluateCarFolder);
-            uploadClick = new RelayCommand(upload);
-            backClick = new RelayCommand(back);
+            EvaluateClick = new RelayCommand(EvaluateCarFolder);
+            UploadClick = new RelayCommand(Upload);
+            BackClick = new RelayCommand(Back);
 
             Messenger.Default.Register<NotificationMessage<string>>(this, (message) =>
             {
@@ -170,25 +170,25 @@ namespace AcrlSync.ViewModel
                     if (message.Notification == "Tree Loaded")
                     {
                         treeLoaded = true;
-                        ftpLoaded = true;
+                        FtpLoaded = true;
 
-                        seriesList.Clear();
-                        carList.Clear();
-                        skinList.Clear();
+                        SeriesList.Clear();
+                        CarList.Clear();
+                        SkinList.Clear();
 
-                        foreach (Tree child in tree.children)
+                        foreach (Tree child in tree.Children)
                         {
-                            foreach (Tree child2 in child.children)
+                            foreach (Tree child2 in child.Children)
                             {
-                                seriesList.Add(child2);
+                                SeriesList.Add(child2);
                             }
                         }
                     }
                     if (message.Notification == "Connection Failure")
                     {
                         treeLoaded = false;
-                        ftpLoaded = true;
-                        string errorMessage = "Could not connect to FTP: " + ConnectionSettings.options.HostName;
+                        FtpLoaded = true;
+                        string errorMessage = "Could not connect to FTP: " + ConnectionSettings.Options.HostName;
                         System.Windows.MessageBox.Show(errorMessage, "Connection Failure", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     }
                 }
@@ -196,57 +196,57 @@ namespace AcrlSync.ViewModel
                 {
                     _acRoot = message.Content;
                     treeLoaded = false;
-                    ftpLoaded = false;
+                    FtpLoaded = false;
                     tree = new Tree("Upload");
-                    seriesList.Clear();
-                    carList.Clear();
-                    skinList.Clear();
+                    SeriesList.Clear();
+                    CarList.Clear();
+                    SkinList.Clear();
                 }
             });
 
         }
 
-        private void evaluateCarFolder()
+        private void EvaluateCarFolder()
         {
-            filesToUpload.Clear();
-            string folder = selectedSkin.fullName;
+            FilesToUpload.Clear();
+            string folder = SelectedSkin.FullName;
             string[] files = Directory.GetFiles(folder);
             foreach (string file in files)
             {
-                filesToUpload.Add(new UploadFiles(file));
+                FilesToUpload.Add(new UploadFiles(file));
             }
-            checkForFile(filesToUpload, "preview.jpg");
-            checkForFile(filesToUpload, "livery.png");
-            checkForFile(filesToUpload, "ui_skin.json");
+            CheckForFile(FilesToUpload, "preview.jpg");
+            CheckForFile(FilesToUpload, "livery.png");
+            CheckForFile(FilesToUpload, "ui_skin.json");
         }
 
-        private void checkForFile(ObservableCollection<UploadFiles> files, string file)
+        private void CheckForFile(ObservableCollection<UploadFiles> files, string file)
         {
-            if (files.Any(x => string.Compare(x.name, file, true) == 0) == false)
+            if (files.Any(x => string.Compare(x.Name, file, true) == 0) == false)
             {
                 files.Add(new UploadFiles(file, true));
             }
         }
 
-        private void back()
+        private void Back()
         {
             Messenger.Default.Send<NotificationMessage>(new NotificationMessage("Switch View"));
         }
 
-        private async void upload()
+        private async void Upload()
         {
-            uploadEnabled = false;
-            log += "***************************\n";
-            log += "****     UPLOADING     ****\n";
-            log += "***************************\n";
-            await uploadToFtp(filesToUpload);
-            log += "***************************\n";
-            log += "****     COMPLETED     ****\n";
-            log += "***************************\n";
-            uploadEnabled = true;
+            UploadEnabled = false;
+            Log += "***************************\n";
+            Log += "****     UPLOADING     ****\n";
+            Log += "***************************\n";
+            await UploadToFtp(FilesToUpload);
+            Log += "***************************\n";
+            Log += "****     COMPLETED     ****\n";
+            Log += "***************************\n";
+            UploadEnabled = true;
         }
 
-        private Task uploadToFtp(ObservableCollection<UploadFiles> files)
+        private Task UploadToFtp(ObservableCollection<UploadFiles> files)
         {
             var progressReporter = new ProgressReporter();
             Task t = new Task(() => BackgroundUpload(files, progressReporter));
@@ -258,12 +258,12 @@ namespace AcrlSync.ViewModel
         {
             if (files.Count < 1)
                 return;
-            string remotePath = selectedCar.fullName + @"/skins/" + selectedSkin.Name;
+            string remotePath = SelectedCar.FullName + @"/skins/" + SelectedSkin.Name;
 
             using (Session session = new Session())
             {
                 try
-                { session.Open(ConnectionSettings.options); }
+                { session.Open(ConnectionSettings.Options); }
                 catch (WinSCP.SessionRemoteException e)
                 {
                     System.Console.WriteLine(e.Message);
@@ -275,10 +275,10 @@ namespace AcrlSync.ViewModel
                 TransferOperationResult transferResult;
                 foreach (UploadFiles file in files)
                 {
-                    if (file.transfer == true)
+                    if (file.Transfer == true)
                     {
                         //Console.WriteLine(string.Format("Uploading {0} to {1}", file.fullname, remotePath + @"/" + file.name));
-                        transferResult = session.PutFiles(file.fullname, remotePath+@"/"+file.name, false, transferOptions);
+                        transferResult = session.PutFiles(file.Fullname, remotePath+@"/"+file.Name, false, transferOptions);
 
                         //log results
                         if (transferResult.IsSuccess)
@@ -287,7 +287,7 @@ namespace AcrlSync.ViewModel
                             {
                                 reporter.ReportProgressAsync(() =>
                                 {
-                                    log += string.Format("Uploaded: {0}\n", file.name);
+                                    Log += string.Format("Uploaded: {0}\n", file.Name);
                                 });
                             }
                         }
@@ -297,7 +297,7 @@ namespace AcrlSync.ViewModel
                             {
                                 reporter.ReportProgressAsync(() =>
                                 {
-                                    log += string.Format("Error: {0}\n\t{1}\n", file.name, transfer.Error);
+                                    Log += string.Format("Error: {0}\n\t{1}\n", file.Name, transfer.Error);
                                 });
                             }
                         }

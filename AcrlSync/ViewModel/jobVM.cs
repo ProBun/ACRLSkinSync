@@ -14,114 +14,114 @@ namespace AcrlSync.ViewModel
     /// See http://www.galasoft.ch/mvvm
     /// </para>
     /// </summary>
-    public class jobVM : ViewModelBase
+    public class JobVM : ViewModelBase
     {
         private List<string> _ExistingNames;
 
-        public RelayCommand selectClick { get; set; }
-        public RelayCommand saveClick { get; set; }
-        public RelayCommand cancelClick { get; set; }
-        public RelayCommand<Tree> treeSelectionChange { get; set; }
+        public RelayCommand SelectClick { get; set; }
+        public RelayCommand SaveClick { get; set; }
+        public RelayCommand CancelClick { get; set; }
+        public RelayCommand<Tree> TreeSelectionChange { get; set; }
 
         private bool _showErrors;
-        public bool showErrors
+        public bool ShowErrors
         {
             get { return _showErrors; }
             set
             {
                 _showErrors = value;
-                RaisePropertyChanged(() => showErrors);
+                RaisePropertyChanged(() => ShowErrors);
             }
         }
 
         private string _name;
-        public string name
+        public string Name
         {
             get { return _name; }
             set
             {
                 _name = value;
                 if (string.IsNullOrWhiteSpace(value))
-                    nameErr = "Name is required.";
+                    NameErr = "Name is required.";
                 else if (_ExistingNames.Contains(value))
-                    nameErr = "Job already exists with this name.";
+                    NameErr = "Job already exists with this name.";
                 else
-                    nameErr = null;
-                RaisePropertyChanged(() => name);
+                    NameErr = null;
+                RaisePropertyChanged(() => Name);
             }
         }
 
         private string _nameErr;
-        public string nameErr
+        public string NameErr
         {
             get { return _nameErr; }
             set
             {
                 _nameErr = value;
-                RaisePropertyChanged(() => nameErr);
+                RaisePropertyChanged(() => NameErr);
             }
         }
 
         private List<Tree> _seasons;
-        public List<Tree> seasons
+        public List<Tree> Seasons
         {
             get { return _seasons; }
             set
             {
                 _seasons = value;
-                RaisePropertyChanged(() => seasons);
+                RaisePropertyChanged(() => Seasons);
             }
         }
 
         private string _acPath;
-        public string acPath
+        public string AcPath
         {
             get { return _acPath; }
             set
             {
                 _acPath = value;
                 if (string.IsNullOrWhiteSpace(value))
-                    acErr = "AC cars directory is required.";
+                    AcErr = "AC cars directory is required.";
                 else
-                    acErr = null;
-                RaisePropertyChanged(() => acPath);
+                    AcErr = null;
+                RaisePropertyChanged(() => AcPath);
             }
         }
 
         private string _acErr;
-        public string acErr
+        public string AcErr
         {
             get { return _acErr; }
             set
             {
                 _acErr = value;
-                RaisePropertyChanged(() => acErr);
+                RaisePropertyChanged(() => AcErr);
             }
         }
 
         private string _selected;
-        public string selected
+        public string Selected
         {
             get { return _selected; }
             set
             {
                 _selected = value;
                 if (string.IsNullOrWhiteSpace(value))
-                    selectedErr = "Sync folder must be selected.";
+                    SelectedErr = "Sync folder must be selected.";
                 else
-                    selectedErr = null;
-                RaisePropertyChanged(() => selected);
+                    SelectedErr = null;
+                RaisePropertyChanged(() => Selected);
             }
         }
 
         private string _selectedErr;
-        public string selectedErr
+        public string SelectedErr
         {
             get { return _selectedErr; }
             set
             {
                 _selectedErr = value;
-                RaisePropertyChanged(() => selectedErr);
+                RaisePropertyChanged(() => SelectedErr);
             }
         }
         
@@ -130,7 +130,7 @@ namespace AcrlSync.ViewModel
         /// <summary>
         /// Initializes a new instance of the jobVM class.
         /// </summary>
-        public jobVM()
+        public JobVM()
         {
             _ExistingNames = new List<string>();
             _name = "";
@@ -138,10 +138,10 @@ namespace AcrlSync.ViewModel
             _acPath = "";
             _showErrors = false;
 
-            selectClick = new RelayCommand(selectACfolder);
-            saveClick = new RelayCommand(save);
-            cancelClick = new RelayCommand(cancel);
-            treeSelectionChange = new RelayCommand<Tree>(TreeChange);
+            SelectClick = new RelayCommand(SelectACfolder);
+            SaveClick = new RelayCommand(Save);
+            CancelClick = new RelayCommand(Cancel);
+            TreeSelectionChange = new RelayCommand<Tree>(TreeChange);
 
             _seasons = new List<Tree>();
             var item = new Tree("Download");
@@ -153,61 +153,63 @@ namespace AcrlSync.ViewModel
                     if (message.Content!=null)
                     {
                         _editItem = message.Content;
-                        name = message.Content.name;
+                        Name = message.Content.Name;
                         //selected = message.Content.ftpPath;
-                        acPath = message.Content.acCarsPath;
-                        showErrors = false;
+                        AcPath = message.Content.AcCarsPath;
+                        ShowErrors = false;
                     }
                     else
                     {
                         _editItem = null;
-                        name = "";
-                        selected = "";
-                        acPath = "";
-                        showErrors = false;
+                        Name = "";
+                        Selected = "";
+                        AcPath = "";
+                        ShowErrors = false;
                     }
                 }
             });
         }
 
-        public void selectACfolder()
+        public void SelectACfolder()
         {
-            var dialog = new System.Windows.Forms.FolderBrowserDialog();
-            dialog.ShowNewFolderButton = false;
+            var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                ShowNewFolderButton = false
+            };
             DialogResult dr = dialog.ShowDialog();
             if (dr == DialogResult.OK)
-                acPath = dialog.SelectedPath;
+                AcPath = dialog.SelectedPath;
         }
 
         public void TreeChange(Tree selectedTree)
         {
-            selected = selectedTree.fullName;
-            if (selectedTree.children.Count > 0)
-                selectedErr = "Selected Sync folder is not bottom level";
+            Selected = selectedTree.FullName;
+            if (selectedTree.Children.Count > 0)
+                SelectedErr = "Selected Sync folder is not bottom level";
             else
-                selectedErr = null;
+                SelectedErr = null;
 
         }
 
-        public void save()
+        public void Save()
         {
-            showErrors = (nameErr != null || acErr != null || selectedErr != null);
+            ShowErrors = (NameErr != null || AcErr != null || SelectedErr != null);
 
-            if (showErrors)
+            if (ShowErrors)
                 return;
 
             //do save and exit
             JobItem newJob = new JobItem()
             {
-                name = this.name,
-                acCarsPath = acPath,
+                Name = this.Name,
+                AcCarsPath = AcPath,
                 //ftpPath = selected
             };
 
             Messenger.Default.Send<NotificationMessage<JobItem>>(new NotificationMessage<JobItem>(newJob, "closeJob"));
         }
 
-        public void cancel()
+        public void Cancel()
         {
             Messenger.Default.Send<NotificationMessage<JobItem>>(new NotificationMessage<JobItem>(_editItem, "closeJob"));
         }

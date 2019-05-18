@@ -12,13 +12,13 @@
         SizeToContent="WidthAndHeight"
         ResizeMode="NoResize"
         Closing="jobWindow_Closing"
-        DataContext="{Binding jobVM, Source={StaticResource Locator}}">
+        DataContext="{Binding JobVM, Source={StaticResource Locator}}">
 
     <Window.Resources>
         <Style TargetType="{x:Type TextBlock}" x:Key="errorStyle">
             <Setter Property="Foreground" Value="Red"/>
             <Style.Triggers>
-                <DataTrigger Binding="{Binding Path=showErrors}" Value="False">
+                <DataTrigger Binding="{Binding Path=ShowErrors}" Value="False">
                     <Setter Property="Visibility" Value="Hidden"/>
                 </DataTrigger>
             </Style.Triggers>
@@ -43,14 +43,14 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Row="0" Text="Name"/>
-                <TextBox Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding name, UpdateSourceTrigger=PropertyChanged}"/>
-                <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding nameErr}" Style="{StaticResource errorStyle}"/>
+                <TextBox Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding NameErr}" Style="{StaticResource errorStyle}"/>
 
                 <TextBlock Grid.Row="4" Text="AC car folder"/>
                 <TextBox Grid.Row="5" IsReadOnly="True" Text="{Binding acPath, UpdateSourceTrigger=PropertyChanged}"/>
-                <Button Margin="3 0 0 0" Grid.Row="5" Grid.Column="1" Content="Select" Command="{Binding selectClick}"/>
-                <TextBlock Grid.Row="6" Grid.ColumnSpan="2" Text="{Binding acErr}" Style="{StaticResource errorStyle}"/>
-                <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Text="{Binding selectedErr}" Style="{StaticResource errorStyle}" VerticalAlignment="Bottom"/>
+                <Button Margin="3 0 0 0" Grid.Row="5" Grid.Column="1" Content="Select" Command="{Binding SelectClick}"/>
+                <TextBlock Grid.Row="6" Grid.ColumnSpan="2" Text="{Binding AcErr}" Style="{StaticResource errorStyle}"/>
+                <TextBlock Grid.Row="7" Grid.ColumnSpan="2" Text="{Binding SelectedErr}" Style="{StaticResource errorStyle}" VerticalAlignment="Bottom"/>
             </Grid>
             <Grid Margin="20 0 0 0">
                 <Grid.RowDefinitions>
@@ -60,23 +60,23 @@
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Row="0" Text="Select Sync Folder"/>
                 <TreeView x:Name="myTreeView" Grid.Row="1" Width="300"
-                          ItemsSource="{Binding seasons}"
+                          ItemsSource="{Binding Seasons}"
                           ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectedItemChanged">
-                            <i:InvokeCommandAction Command="{Binding treeSelectionChange}" 
+                            <i:InvokeCommandAction Command="{Binding TreeSelectionChange}" 
                     CommandParameter="{Binding ElementName=myTreeView,Path=SelectedItem}"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                     <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate ItemsSource="{Binding children}" DataType="{x:Type model:Tree}">
+                        <HierarchicalDataTemplate ItemsSource="{Binding Children}" DataType="{x:Type model:Tree}">
                             <StackPanel>
                                 <TextBlock Text="{Binding Name}" />
                             </StackPanel>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
                 </TreeView>
-                <TextBox Grid.Row="2" Text="{Binding selected, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True"/>
+                <TextBox Grid.Row="2" Text="{Binding Selected, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="True"/>
             </Grid>
         </StackPanel>
         
@@ -88,8 +88,8 @@
                 <ColumnDefinition Width="80"/>
                 <ColumnDefinition Width="83"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="0"  Content="_OK" Command="{Binding saveClick}"/>
-            <Button Grid.Column="1" Content="_Cancel" Margin="3 0 0 0" Command="{Binding cancelClick}"/>
+            <Button Grid.Column="0"  Content="_OK" Command="{Binding SaveClick}"/>
+            <Button Grid.Column="1" Content="_Cancel" Margin="3 0 0 0" Command="{Binding CancelClick}"/>
         </Grid>
     </StackPanel>
 </Window>

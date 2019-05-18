@@ -14,7 +14,7 @@ namespace AcrlSync.Model
         {
             using (Session session = new Session())
             {
-                session.Open(ConnectionSettings.options);
+                session.Open(ConnectionSettings.Options);
 
                 string remotePath = "/" + directory;
                
@@ -51,7 +51,7 @@ namespace AcrlSync.Model
             {
                 // Connect
                 try
-                { session.Open(ConnectionSettings.options); }
+                { session.Open(ConnectionSettings.Options); }
                 catch (WinSCP.SessionRemoteException e)
                 {
                     System.Console.WriteLine(e.Message);

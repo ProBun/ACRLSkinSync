@@ -10,75 +10,75 @@ namespace AcrlSync.Model
 {
     public class UploadFiles
     {
-        public string name { get; set; }
-        public string fullname { get; set; }
-        public string ext { get; set; }
-        public bool allowedExt { get; set; }
-        public bool isDDS { get; set; }
-        public bool isCompressed { get; set; }
-        public bool validSize { get; set; }
-        public bool valid { get; set; } //used for strikethrough
-        public bool missing { get; set; } //used for red
-        public bool transferable { get; set; } //used for showing upload box
-        public bool transfer { get; set; } 
-        public string error { get; set; }
+        public string Name { get; set; }
+        public string Fullname { get; set; }
+        public string Ext { get; set; }
+        public bool AllowedExt { get; set; }
+        public bool IsDDS { get; set; }
+        public bool IsCompressed { get; set; }
+        public bool ValidSize { get; set; }
+        public bool Valid { get; set; } //used for strikethrough
+        public bool Missing { get; set; } //used for red
+        public bool Transferable { get; set; } //used for showing upload box
+        public bool Transfer { get; set; } 
+        public string Error { get; set; }
 
         private static readonly string[] _validExtensions = { ".jpg", ".png", ".dds", ".ini", ".jpeg", ".json" };
 
         public UploadFiles(string path)
         {
-            this.fullname = path;
-            this.name = Path.GetFileName(path);
-            this.ext = Path.GetExtension(path);
-            allowedExt = _validExtensions.Contains(this.ext.ToLower());
-            missing = false;
-            valid = true;
-            transfer = true;
-            error = "";
+            Fullname = path;
+            Name = Path.GetFileName(path);
+            Ext = Path.GetExtension(path);
+            AllowedExt = _validExtensions.Contains(this.Ext.ToLower());
+            Missing = false;
+            Valid = true;
+            Transfer = true;
+            Error = "";
 
-            if (allowedExt == false)
+            if (AllowedExt == false)
             {
-                valid = false;
-                transfer = false;
-                error = "Invalid ext";
+                Valid = false;
+                Transfer = false;
+                Error = "Invalid ext";
             }
 
-            this.isDDS = String.Compare(this.ext, ".dds", true) == 0;
-            if (this.isDDS)
+            IsDDS = String.Compare(this.Ext, ".dds", true) == 0;
+            if (IsDDS)
             {
                 long length = new System.IO.FileInfo(path).Length;
-                this.isCompressed = length < 1e7;
+                IsCompressed = length < 1e7;
                 // Console.WriteLine("length " + length.ToString());
 
-                if (isCompressed == false)
+                if (IsCompressed == false)
                 {
-                    valid = false;
-                    transfer = false;
-                    error = "Too large";
+                    Valid = false;
+                    Transfer = false;
+                    Error = "Too large";
                 }
 
-                var dds = new ddsParser(path);
-                this.validSize = dds.width < 2049 && dds.height < 2049;
+                var dds = new DdsParser(path);
+                ValidSize = dds.Width < 2049 && dds.Height < 2049;
 
-                if (validSize == false)
+                if (ValidSize == false)
                 {
-                    valid = false;
-                    transfer = false;
-                    error = "Exceeds 2048px";
+                    Valid = false;
+                    Transfer = false;
+                    Error = "Exceeds 2048px";
                 }
             }
-            transferable = valid;
+            Transferable = Valid;
         }
 
 
-        public UploadFiles(string fName, bool missing)
+        public UploadFiles(string fullName, bool missing)
         {
-            this.name = fName;
-            this.missing = true;
-            valid = true;
-            transfer = false;
-            transferable = false;
-            error = "File is missing!";
+            Name = fullName;
+            Missing = true;
+            Valid = true;
+            Transfer = false;
+            Transferable = false;
+            Error = "File is missing!";
         }
     }
 
@@ -86,11 +86,11 @@ namespace AcrlSync.Model
     /// read dds header after size in px
     /// Stolen code from https://gist.github.com/soeminnminn/e9c4c99867743a717f5b
     /// </summary>
-    class ddsParser
+    class DdsParser
     {
-        public uint width;
-        public uint height;
-        public ddsParser(string image)
+        public uint Width { get; set; }
+        public uint Height { get; set; }
+        public DdsParser(string image)
         {
             Stream ddsImage = File.Open(image, FileMode.Open);
             if (ddsImage == null) return;
@@ -103,13 +103,13 @@ namespace AcrlSync.Model
                 if (this.ReadHeader(reader, ref header))
                 {
                     //Console.WriteLine(String.Format("DDS: {0} is {1}x{2}",image,header.width,header.height));
-                    width = header.width;
-                    height = header.height;
+                    Width = header.width;
+                    Height = header.height;
                 }
                 else
                 {
                     //failed to read dds
-                    string errorMessage = "Could not connect to FTP: " + ConnectionSettings.options.HostName;
+                    string errorMessage = "Could not connect to FTP: " + ConnectionSettings.Options.HostName;
                     System.Windows.MessageBox.Show(errorMessage, "Connection Failure", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                 }
             }
@@ -185,7 +185,7 @@ namespace AcrlSync.Model
             public uint[] reserved;//[11];
 
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-            public struct pixelformatstruct
+            public struct Pixelformatstruct
             {
                 public uint size;	// equals size of struct (which is part of the data file!)
                 public uint flags;
@@ -196,17 +196,17 @@ namespace AcrlSync.Model
                 public uint bbitmask;
                 public uint alphabitmask;
             }
-            public pixelformatstruct pixelformat;
+            public Pixelformatstruct pixelformat;
 
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-            public struct ddscapsstruct
+            public struct DdsCapsStruct
             {
                 public uint caps1;
                 public uint caps2;
                 public uint caps3;
                 public uint caps4;
             }
-            public ddscapsstruct ddscaps;
+            public DdsCapsStruct ddscaps;
             public uint texturestage;
 
             //#ifndef __i386__

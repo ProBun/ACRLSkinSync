@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using AcrlSync.Model;
 using System.Collections.ObjectModel;
 using System;
+using System.Text.RegularExpressions;
 using System.Linq;
 using ByteSizeLib;
 using WinSCP;
@@ -16,44 +17,44 @@ using Ookii.Dialogs.Wpf;
 
 namespace AcrlSync.ViewModel
 {
-    public class optionItem : ViewModelBase
+    public class OptionItem : ViewModelBase
     {
-        public string name
+        public string Name
         {
             get { return _name; }
             set
             {
                 _name = value;
-                RaisePropertyChanged(() => name);
+                RaisePropertyChanged(() => Name);
             }
         }
-        public string dlPath
+        public string DownloadPath
         {
-            get { return _dlPath; }
+            get { return _downloadPath; }
             set
             {
-                _dlPath = value;
-                RaisePropertyChanged(() => dlPath);
+                _downloadPath = value;
+                RaisePropertyChanged(() => DownloadPath);
             }
         }
-        public bool? isChecked
+        public bool? IsChecked
         {
             get { return _isChecked; }
             set
             {
                 _isChecked = value;
-                RaisePropertyChanged(() => isChecked);
+                RaisePropertyChanged(() => IsChecked);
             }
         }
 
         private string _name;
-        private string _dlPath;
+        private string _downloadPath;
         private bool? _isChecked;
 
-        public optionItem()
+        public OptionItem()
         {
             _name = "";
-            _dlPath = "";
+            _downloadPath = "";
         }
     }
 
@@ -63,166 +64,181 @@ namespace AcrlSync.ViewModel
     /// See http://www.mvvmlight.net
     /// </para>
     /// </summary>
-    public class DownloadVM : ViewModelBase
+    public class DownloadVM : ViewModelBase, IDisposable
     {
         private readonly IFtpService _dataService;
 
         private CancellationTokenSource cancellationTokenSource;
 
         private ObservableCollection<JobItem> _jobs;
-        public ObservableCollection<JobItem> jobs
+        public ObservableCollection<JobItem> Jobs
         {
             get { return _jobs; }
-            set { _jobs = value; RaisePropertyChanged(() => jobs); }
+            set { _jobs = value; RaisePropertyChanged(() => Jobs); }
         }
 
         private JobItem _selectedJob;
-        public JobItem selectedJob
+        public JobItem SelectedJob
         {
             get { return _selectedJob; }
-            set { _selectedJob = value; RaisePropertyChanged(() => selectedJob); }
+            set { _selectedJob = value; RaisePropertyChanged(() => SelectedJob); }
         }
 
         private string _log;
-        public string log
+        public string Log
         {
             get { return _log; }
-            set { _log = value; RaisePropertyChanged(() => log); }
+            set { _log = value; RaisePropertyChanged(() => Log); }
         }
 
         private string _skins;
-        public string skins
+        public string Skins
         {
             get { return _skins; }
-            set { _skins = value; RaisePropertyChanged(() => skins); }
+            set { _skins = value; RaisePropertyChanged(() => Skins); }
         }
 
         private string _analysisText;
-        public string analysisText
+        public string AnalysisText
         {
             get { return _analysisText; }
-            set { _analysisText = value; RaisePropertyChanged(() => analysisText); }
+            set { _analysisText = value; RaisePropertyChanged(() => AnalysisText); }
         }
 
         private string _runText;
-        public string runText
+        public string RunText
         {
             get { return _runText; }
-            set { _runText = value; RaisePropertyChanged(() => runText); }
+            set { _runText = value; RaisePropertyChanged(() => RunText); }
         }
 
         private string _size;
-        public string size
+        public string Size
         {
             get { return _size; }
-            set { _size = value; RaisePropertyChanged(() => size); }
+            set { _size = value; RaisePropertyChanged(() => Size); }
         }
 
         private string _files;
-        public string files
+        public string Files
         {
             get { return _files; }
-            set { _files = value; RaisePropertyChanged(() => files); }
+            set { _files = value; RaisePropertyChanged(() => Files); }
         }
 
         private bool _treeLoaded;
-        public bool treeLoaded
+        public bool TreeLoaded
         {
             get { return _treeLoaded; }
-            set { _treeLoaded = value; RaisePropertyChanged(() => treeLoaded); }
+            set { _treeLoaded = value; RaisePropertyChanged(() => TreeLoaded); }
         }
 
         private string _loading;
-        public string loading
+        public string Loading
         {
             get { return _loading; }
-            set { _loading = value; RaisePropertyChanged(() => loading); }
+            set { _loading = value; RaisePropertyChanged(() => Loading); }
         }
 
         private string _ftpAddress;
-        public string ftpAddress
+        public string FtpAddress
         {
             get { return _ftpAddress; }
             set
             {
                 _ftpAddress = value;
-                RaisePropertyChanged(() => ftpAddress);
+                RaisePropertyChanged(() => FtpAddress);
 
-                //check valid before this and redo tree loading
+                // Check valid before this and redo tree loading
                 if (value != null)
-                    ConnectionSettings.setHost(value);
+                    ConnectionSettings.SetHost(value);
             }
         }
 
         private string _ftpError;
-        public string ftpError
+        public string FtpError
         {
             get { return _ftpError; }
-            set { _ftpError = value; RaisePropertyChanged(() => ftpError); }
+            set { _ftpError = value; RaisePropertyChanged(() => FtpError); }
         }
 
         private bool _ftpLoaded;
-        public bool ftpLoaded
+        public bool FtpLoaded
         {
             get { return _ftpLoaded; }
-            set { _ftpLoaded = value; RaisePropertyChanged(() => ftpLoaded); }
+            set { _ftpLoaded = value; RaisePropertyChanged(() => FtpLoaded); }
         }
 
         private string _acPath;
-        public string acPath
+        public string AcPath
         {
             get { return _acPath; }
             set
             {
                 _acPath = value;
-                RaisePropertyChanged(() => acPath);
+                RaisePropertyChanged(() => AcPath);
 
-                //check valid before this and redo tree loading
-                Jobs.setPath(value);
+                Model.Jobs.SetPath(value);
             }
         }
+
+        private string _exclusionString;
+        public string ExclusionString
+        {
+            get { return _exclusionString; }
+            set { _exclusionString = value; RaisePropertyChanged(() => ExclusionString); }
+        }
+
 
         private bool _analyseInProgress;
         private bool _runInProgress;
 
         private JobItem _analysedjob;
-        // private JobItem _editJob;
-        // private int _editIndex;
-
         private AnalysisItem analysis;
 
-        public RelayCommand ftpClick { get; set; }
-        public RelayCommand editClick { get; set; }
-        public RelayCommand addClick { get; set; }
-        public RelayCommand analyseClick { get; set; }
-        public RelayCommand runClick { get; set; }
-        public RelayCommand findClick { get; set; }
-        public RelayCommand uploadClick { get; set; }
+        public RelayCommand FtpClick { get; set; }
+        public RelayCommand EditClick { get; set; }
+        public RelayCommand AddClick { get; set; }
+        public RelayCommand AnalyseClick { get; set; }
+        public RelayCommand RunClick { get; set; }
+        public RelayCommand FindClick { get; set; }
+        public RelayCommand UploadClick { get; set; }
 
-        // private jobVM _jobvm;
         private List<Tree> _seasons;
-        public List<Tree> seasons
+        public List<Tree> Seasons
         {
             get { return _seasons; }
             set
             {
                 _seasons = value;
-                RaisePropertyChanged(() => seasons);
+                RaisePropertyChanged(() => Seasons);
             }
         }
 
-
-
-        private List<optionItem> _options;
-        public List<optionItem> options
+        private List<OptionItem> _options;
+        public List<OptionItem> Options
         {
             get { return _options; }
             set
             {
                 _options = value;
-                RaisePropertyChanged(() => options);
+                RaisePropertyChanged(() => Options);
 
             }
+        }
+
+        private bool CheckCarsPath(string path)
+        {
+            bool exists = Directory.Exists(path);
+
+            if (!exists)
+            {
+                System.Windows.Forms.MessageBox.Show(string.Format("The AC Cars Path: \"{0}\" doesn't exist.\n\nPlease create the folder or update the path.", path), "Cars folder not found.",
+                    System.Windows.Forms.MessageBoxButtons.OK,
+                    System.Windows.Forms.MessageBoxIcon.Error);
+            }
+
+            return exists;
         }
 
         /// <summary>
@@ -230,29 +246,23 @@ namespace AcrlSync.ViewModel
         /// </summary>
         public DownloadVM(IFtpService dataService)
         {
-            _ftpAddress = ConnectionSettings.options.HostName;
-            _acPath = Jobs.acCarsPath;
+            _ftpAddress = ConnectionSettings.Options.HostName;
+            _acPath = Model.Jobs.acCarsPath;
 
-            loadConnectionJson();
-            loadPathJson();
-
-            //find jobVM so it can be intialised and start async call to populate tree
-            //ViewModelLocator vmLoc = new ViewModelLocator();
-            //_jobvm = vmLoc.jobVM;
+            LoadConnectionJson();
+            LoadSettingsJson();
 
             _seasons = new List<Tree>();
             var item = new Tree("Download");
             _seasons.Add(item);
 
-            _options = new List<optionItem>();
+            _options = new List<OptionItem>();
 
-            //editClick = new RelayCommand(editJob);
-            //addClick = new RelayCommand(addJob);
-            analyseClick = new RelayCommand(analyseJob);
-            runClick = new RelayCommand(runJob);
-            ftpClick = new RelayCommand(reinitialise);
-            findClick = new RelayCommand(findPath);
-            uploadClick = new RelayCommand(switchToUpload);
+            AnalyseClick = new RelayCommand(AnalyseJob);
+            RunClick = new RelayCommand(RunJob);
+            FtpClick = new RelayCommand(Reinitialise);
+            FindClick = new RelayCommand(FindPath);
+            UploadClick = new RelayCommand(SwitchToUpload);
 
             _dataService = dataService;
             _log = string.Empty;
@@ -268,191 +278,138 @@ namespace AcrlSync.ViewModel
             _analysisText = "A_nalyse";
             _runText = "_Run";
 
-            //_editJob = null;
-
-            /*
-            _jobs = new ObservableCollection<JobItem>();
-            loadJson();
-            _selectedJob = _jobs.FirstOrDefault();
-
-            Messenger.Default.Register<NotificationMessage<JobItem>>(this, (message) => {
-                if (message.Notification == "closeJob")
-                {
-                    if (message.Content != null)
-                    {
-                        if (_editJob == null)
-                            jobs.Add(message.Content);
-                        else
-                            jobs.Insert(_editIndex, message.Content);
-                        selectedJob = message.Content;
-                        saveJson();
-                        _editJob = null;
-                    }
-                }
-            });
-            */
-
             Messenger.Default.Register<NotificationMessage<string>>(this, (message) =>
             {
-                /*
-                if (message.Notification == "closeJob")
-                {
-                    if (_editJob != null)
-                    {
-                        jobs.Insert(_editIndex, _editJob);
-                        selectedJob = _editJob;
-                        _editJob = null;
-                    }
-                }
-                */
                 if (message.Content == "Download")
                 {
                     if (message.Notification == "Tree Loaded")
                     {
-                        loading = "";
-                        treeLoaded = true;
-                        ftpLoaded = true;
-                        ftpError = "";
+                        Loading = "";
+                        TreeLoaded = true;
+                        FtpLoaded = true;
+                        FtpError = "";
 
-                        List<optionItem> list = new List<optionItem>();
+                        List<OptionItem> list = new List<OptionItem>();
                         foreach (Tree s in _seasons)
                         {
-                            flattenTree(s, "", list);
+                            FlattenTree(s, "", list);
                         }
-                        options = list;
+                        Options = list;
                     }
                     if (message.Notification == "Connection Failure")
                     {
-                        loading = "";
-                        treeLoaded = false;
-                        ftpLoaded = true;
-                        ftpError = "Could not Connect";
-                        string errorMessage = "Could not connect to FTP: " + ConnectionSettings.options.HostName;
+                        Loading = "";
+                        TreeLoaded = false;
+                        FtpLoaded = true;
+                        FtpError = "Could not Connect";
+                        string errorMessage = "Could not connect to FTP: " + ConnectionSettings.Options.HostName;
                         System.Windows.MessageBox.Show(errorMessage, "Connection Failure", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     }
                 }
             });
-            //_dataService.GetDirectoryDetails("Download");
         }
 
-        private void flattenTree(Tree input, string parent, List<optionItem> output, int level = 0)
+        ~DownloadVM()
+        {
+            // Write the setting to disk. No need to save connection that updates on edit.
+            SaveSettingsJson();
+        }
+
+        private void FlattenTree(Tree input, string parent, List<OptionItem> output, int level = 0)
         {
             int maxLevel = 2;
 
             if (level == maxLevel)
             {
-                optionItem item = new optionItem();
-                item.name = String.Format("{0} \u2013 {1}", parent, input.Name);
-                item.dlPath = input.fullName;
-                item.isChecked = false;
+                OptionItem item = new OptionItem
+                {
+                    Name = String.Format("{0} \u2013 {1}", parent, input.Name),
+                    DownloadPath = input.FullName,
+                    IsChecked = false
+                };
                 output.Add(item);
             }
             else
             {
-                foreach (Tree child in input.children)
-                    flattenTree(child, input.Name, output, level + 1);
+                foreach (Tree child in input.Children)
+                    FlattenTree(child, input.Name, output, level + 1);
             }
         }
 
-        private void reinitialise()
+        private void Reinitialise()
         {
-            saveConnectionJson();
-            loading = "Loading data from FTP";
-            treeLoaded = false;
-            ftpLoaded = false;
-            ftpError = "Connecting";
+            SaveConnectionJson();
+            Loading = "Loading data from FTP";
+            TreeLoaded = false;
+            FtpLoaded = false;
+            FtpError = "Connecting";
 
-            options = new List<optionItem>();
+            Options = new List<OptionItem>();
 
-            //_jobvm.seasons = new List<Tree>();
             _seasons = new List<Tree>();
             var item = new Tree("Download");
-            //_jobvm.seasons.Add(item);
             _seasons.Add(item);
 
-            analysisText = "A_nalyse";
-            runText = "_Run";
+            AnalysisText = "A_nalyse";
+            RunText = "_Run";
         }
 
-        /*
-        private void editJob()
-        {
-            if (selectedJob==null)
-            {
-                System.Windows.MessageBox.Show("A job must be selected","Select a Job",System.Windows.MessageBoxButton.OK,System.Windows.MessageBoxImage.Exclamation);
-                return;
-            }
-            _editJob = selectedJob;
-            _editIndex = jobs.IndexOf(_editJob);
-            jobs.Remove(selectedJob);
-            Messenger.Default.Send<NotificationMessage<JobItem>>(new NotificationMessage<JobItem>(_editJob,"addJob Show"));  
-        }
-        */
-        /*
-        private void saveJson()
+        private void SaveConnectionJson()
         {
             string path = AppDomain.CurrentDomain.BaseDirectory;
-            string json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
-            System.IO.File.WriteAllText(path+"/jobs.json", json);
-            string json2 = JsonConvert.SerializeObject(jobs, Formatting.Indented);
-            System.IO.File.WriteAllText(path + "/jobs.json", json2);
-        }
-
-        private void loadJson()
-        {
-            try
-            {
-                string path = AppDomain.CurrentDomain.BaseDirectory;
-                string json = System.IO.File.ReadAllText(path + "/jobs.json");
-                _jobs = JsonConvert.DeserializeObject<ObservableCollection<JobItem>>(json);
-            }
-            catch
-            {
-                _jobs = new ObservableCollection<JobItem>();
-            }
-        }
-        */
-        private void saveConnectionJson()
-        {
-            string path = AppDomain.CurrentDomain.BaseDirectory;
-            string json = JsonConvert.SerializeObject(ConnectionSettings.options, Formatting.Indented);
+            string json = JsonConvert.SerializeObject(ConnectionSettings.Options, Formatting.Indented);
             System.IO.File.WriteAllText(path + "/connection.json", json);
         }
 
-        private void loadConnectionJson()
+        private void LoadConnectionJson()
         {
             try
             {
                 string path = AppDomain.CurrentDomain.BaseDirectory;
                 string json = System.IO.File.ReadAllText(path + "/connection.json");
                 SessionOptions temp = JsonConvert.DeserializeObject<SessionOptions>(json);
-                ConnectionSettings.options.HostName = temp.HostName;
-                ConnectionSettings.options.Protocol = temp.Protocol;
-                ConnectionSettings.options.UserName = temp.UserName;
-                ConnectionSettings.options.Password = temp.Password;
+                ConnectionSettings.Options.HostName = temp.HostName;
+                ConnectionSettings.Options.Protocol = temp.Protocol;
+                ConnectionSettings.Options.UserName = temp.UserName;
+                ConnectionSettings.Options.Password = temp.Password;
                 _ftpAddress = temp.HostName;
             }
             catch (FileNotFoundException)
             {
-                saveConnectionJson();
+                SaveConnectionJson();
             }
         }
 
-        private void loadPathJson()
+        private void LoadSettingsJson()
         {
             try
             {
                 string path = AppDomain.CurrentDomain.BaseDirectory;
-                string json = System.IO.File.ReadAllText(path + "/acPath.json");
-                _acPath = JsonConvert.DeserializeObject<String>(json);
+                string json = System.IO.File.ReadAllText(path + "/settings.json");
+                GeneralSettings settings = JsonConvert.DeserializeObject<GeneralSettings>(json);
+                _acPath = settings.CarsDirectory;
+                if (settings.ExcludedSkins.Length > 0)
+                {
+                    _exclusionString = string.Join(":", settings.ExcludedSkins);
+                }
             }
             catch(FileNotFoundException)
             {
                 _acPath = "";
+                _exclusionString = "";
+                SaveSettingsJson();
             }
         }
 
-        private async void analyseJob()
+        private void SaveSettingsJson()
+        {
+            var GeneralSettings = new GeneralSettings(AcPath, ExclusionString);
+            string json = JsonConvert.SerializeObject(GeneralSettings, Formatting.Indented);
+            string path = AppDomain.CurrentDomain.BaseDirectory;
+            System.IO.File.WriteAllText(path + "/settings.json", json);
+        }
+
+        private async void AnalyseJob()
         {
 
             if (_runInProgress)
@@ -464,74 +421,81 @@ namespace AcrlSync.ViewModel
                 return;
             }
 
-            selectedJob = new JobItem();
-            selectedJob.acCarsPath = acPath;
-            foreach (optionItem item in options)
+            if (!CheckCarsPath(AcPath))
             {
-                if (item.isChecked == true)
+                return;
+            }
+
+            SelectedJob = new JobItem
+            {
+                AcCarsPath = AcPath
+            };
+            foreach (OptionItem item in Options)
+            {
+                if (item.IsChecked == true)
                 {
-                    selectedJob.ftpPath.Add(item.dlPath);
+                    SelectedJob.FtpPath.Add(item.DownloadPath);
                 }
             }
-            if (selectedJob.ftpPath.Count < 1)
+            if (SelectedJob.FtpPath.Count < 1)
             {
                 System.Windows.MessageBox.Show("No series selected", "Check some series", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return;
             }
 
-            if (selectedJob == null)
+            if (SelectedJob == null)
             {
                 System.Windows.MessageBox.Show("A job must be selected", "Select a Job", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return;
             }
 
-            ftpLoaded = false;
+            FtpLoaded = false;
 
-            analysisText = "_Cancel";
+            AnalysisText = "_Cancel";
             _analyseInProgress = true;
-            skins = "  0";
-            files = "  0";
-            size = "0 b";
-            log += "*******************************************************************\n";
-            log += "****                     ANALYSIS  STARTED                     ****\n";
-            log += "*******************************************************************\n";
-            _analysedjob = selectedJob;
-            analysis = await analyseFtp(selectedJob);
+            Skins = "  0";
+            Files = "  0";
+            Size = "0 b";
+            Log += "*******************************************************************\n";
+            Log += "****                     ANALYSIS  STARTED                     ****\n";
+            Log += "*******************************************************************\n";
+            _analysedjob = SelectedJob;
+            analysis = await AnalyseFtp(SelectedJob);
             if (analysis == null)
             {
-                log += "*******************************************************************\n";
-                log += "****                     ANALYSIS  FAILED                      ****\n";
-                log += "*******************************************************************\n";
+                Log += "*******************************************************************\n";
+                Log += "****                     ANALYSIS  FAILED                      ****\n";
+                Log += "*******************************************************************\n";
                 Messenger.Default.Send<NotificationMessage>(new NotificationMessage("Connection Failure"));
-                analysisText = "A_nalyse";
+                AnalysisText = "A_nalyse";
                 _analyseInProgress = false;
-                ftpLoaded = true;
+                FtpLoaded = true;
                 return;
             }
-            skins = analysis.skinCount.ToString().PadLeft(3);
-            files = analysis.files.ToString().PadLeft(3);
-            if (analysis.size == 0)
-                size = "0 b";
+            Skins = analysis.SkinCount.ToString().PadLeft(3);
+            Files = analysis.Files.ToString().PadLeft(3);
+            if (analysis.Size == 0)
+                Size = "0 b";
             else
-                size = ByteSize.FromBytes(analysis.size).ToString();
+                Size = ByteSize.FromBytes(analysis.Size).ToString();
             if (!cancellationTokenSource.IsCancellationRequested)
             {
-                log += "*******************************************************************\n";
-                log += "****                     ANALYSIS COMPLETE                     ****\n";
-                log += "*******************************************************************\n";
+                Log += "*******************************************************************\n";
+                Log += "****                     ANALYSIS COMPLETE                     ****\n";
+                Log += "*******************************************************************\n";
             }
             else
             {
-                log += "*******************************************************************\n";
-                log += "****                     ANALYSIS  ABORTED                     ****\n";
-                log += "*******************************************************************\n";
+                Log += "*******************************************************************\n";
+                Log += "****                     ANALYSIS  ABORTED                     ****\n";
+                Log += "*******************************************************************\n";
             }
-            analysisText = "A_nalyse";
+            AnalysisText = "A_nalyse";
             _analyseInProgress = false;
-            ftpLoaded = true;
+            FtpLoaded = true;
         }
 
-        private Task<AnalysisItem> analyseFtp(JobItem job)
+        private Task<AnalysisItem> AnalyseFtp(JobItem job)
         {
             var progressReporter = new ProgressReporter();
             Task<AnalysisItem> t = new Task<AnalysisItem>(() => BackgroundAnalyse(job, progressReporter));
@@ -539,7 +503,7 @@ namespace AcrlSync.ViewModel
             return t;
         }
 
-        private Task<AnalysisItem> runFtp(AnalysisItem data, JobItem job)
+        private Task<AnalysisItem> RunFtp(AnalysisItem data, JobItem job)
         {
             var progressReporter = new ProgressReporter();
             Task<AnalysisItem> t = new Task<AnalysisItem>(() => BackgroundRun(data, job, progressReporter));
@@ -555,37 +519,50 @@ namespace AcrlSync.ViewModel
         /// <returns></returns>
         private AnalysisItem BackgroundAnalyse(JobItem job, ProgressReporter reporter)
         {
-            AnalysisItem data = new AnalysisItem();
-            data.skinCount = 0;
-            data.files = 0;
-            data.size = 0;
-            this.cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = this.cancellationTokenSource.Token;
+            AnalysisItem data = new AnalysisItem
+            {
+                SkinCount = 0,
+                Files = 0,
+                Size = 0
+            };
+            cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
 
             RemoteDirectoryInfo carInfo; // WinSCP API object that represents a list of car folders.
             RemoteDirectoryInfo skinInfo; // WinSCP API object that represents the contents of the car/skins folder.
             RemoteDirectoryInfo skinFiles; // WinSCP API object that represents the contents of a skin folder.
 
+            List<string> exclusionPatterns;
+            if (String.IsNullOrWhiteSpace(ExclusionString)) {
+                exclusionPatterns = new List<string>();
+            } else {
+                exclusionPatterns = ExclusionString.Split(':').ToList().ConvertAll(x => {
+                    x = x.ToLowerInvariant().Replace('/', '\\'); // Make the user pattern lowercase and windows dir separated.
+                    var regexParts = x.Split('*').ToList().ConvertAll(y => Regex.Escape(y)); // Split pattern into parts between wildcards and escape those parts.
+                    return String.Join(".*", regexParts.ToArray()); // Reassemble the parts into a regex pattern with the proper regex wildcard.
+                    });
+            }
+
             using (Session session = new Session())
             {
                 // Connect to the FTP.
                 try
-                { session.Open(ConnectionSettings.options); }
+                { session.Open(ConnectionSettings.Options); }
                 catch (WinSCP.SessionRemoteException e)
                 {
                     System.Console.WriteLine(e.Message);
                     return null;
                 }
 
-                string localPath = job.acCarsPath;
-                foreach (string remotePath in job.ftpPath)
+                string localPath = job.AcCarsPath;
+                foreach (string remotePath in job.FtpPath)
                 {
                     // Open the folder for the series and get the list of car folders.
                     try {
                         carInfo = session.ListDirectory(remotePath);
                     }
                     catch (WinSCP.SessionRemoteException e) {
-                        log += string.Format("{0}\n", e.Message);
+                        Log += string.Format("{0}\n", e.Message);
                         System.Console.WriteLine(e.Message);
                         continue;
                     }
@@ -599,18 +576,18 @@ namespace AcrlSync.ViewModel
                         {
                             reporter.ReportProgressAsync(() =>
                             {
-                                log += string.Format("Car: {0}\n", car.Name);
+                                Log += string.Format("Car: {0}\n", car.Name);
                             });
 
                             // Navigate to the skins folder and get a list its contents
-                            localPath = Path.Combine(job.acCarsPath, car.Name, "skins");
+                            localPath = Path.Combine(job.AcCarsPath, car.Name, "skins");
                             try {
                                 skinInfo = session.ListDirectory(car.FullName + "/skins");
                             }
                             catch (WinSCP.SessionRemoteException e) {
                                 // No Skins folder! Issue lies with the file struct on server.
                                 // Tell user to inform a moderator.
-                                log += string.Format("Error: {0} could not access skins folder. Skipping car, please inform a moderator.\n", car.Name);
+                                Log += string.Format("Error: {0} could not access skins folder. Skipping car, please inform a moderator.\n", car.Name);
                                 System.Console.WriteLine(e.Message);
                                 continue;
                             }
@@ -626,20 +603,30 @@ namespace AcrlSync.ViewModel
                                 {
                                     reporter.ReportProgressAsync(() =>
                                     {
-                                        log += string.Format("\tSkin: {0,-40}", skinDir.Name);
+                                        Log += string.Format("\tSkin: {0,-40}", skinDir.Name);
                                     });
-                                    localPath = Path.Combine(job.acCarsPath, car.Name, "skins", skinDir.Name);
-                                    if (!Directory.Exists(localPath))
+                                    localPath = Path.Combine(job.AcCarsPath, car.Name, "skins", skinDir.Name);
+                                    if (IsExcluded(exclusionPatterns, Path.Combine(car.Name, "skins", skinDir.Name)))
+                                    {
+                                        // Skin is Excluded! Skip it
+                                        reporter.ReportProgressAsync(() =>
+                                        {
+                                            Log += string.Format("Skin has been excluded\n");
+                                        });
+                                    }
+                                    else if (!Directory.Exists(localPath))
                                     {
                                         // Skin does not exist on users system, mark all files for download.
                                         reporter.ReportProgressAsync(() =>
                                         {
-                                            log += string.Format("Not found in cars folder\n");
+                                            Log += string.Format("Not found in cars folder\n");
                                         });
-                                        Skin skin = new Skin();
-                                        skin.name = skinDir.Name;
-                                        skin.car = car.Name;
-                                        data.skinCount += 1;
+                                        Skin skin = new Skin
+                                        {
+                                            Name = skinDir.Name,
+                                            Car = car.Name
+                                        };
+                                        data.SkinCount += 1;
                                         try { // Don't think this one can actually fail. As listing contents of dir we know exists.
                                             skinFiles = session.ListDirectory(skinDir.FullName);
                                         }
@@ -647,43 +634,43 @@ namespace AcrlSync.ViewModel
                                             System.Console.WriteLine(e.Message);
                                             continue;
                                         }
-                                        List<RemoteFileInfo> files = new List<RemoteFileInfo>();
+                                        List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
                                         foreach (RemoteFileInfo file in skinFiles.Files)
                                         {
                                             if (cancellationToken.IsCancellationRequested)
                                                 return data;
                                             if (!file.IsDirectory && file.Name != "..")
                                             {
-                                                files.Add(file);
-                                                data.files += 1;
-                                                data.size += file.Length;
+                                                remoteFiles.Add(file);
+                                                data.Files += 1;
+                                                data.Size += file.Length;
 
                                                 reporter.ReportProgressAsync(() =>
                                                 {
-                                                    this.skins = data.skinCount.ToString().PadLeft(3);
-                                                    this.files = data.files.ToString().PadLeft(3);
-                                                    if (data.size == 0)
-                                                        this.size = "0 b";
+                                                    Skins = data.SkinCount.ToString().PadLeft(3);
+                                                    Files = data.Files.ToString().PadLeft(3);
+                                                    if (data.Size == 0)
+                                                        Size = "0 b";
                                                     else
-                                                        this.size = ByteSize.FromBytes(data.size).ToString();
+                                                        Size = ByteSize.FromBytes(data.Size).ToString();
                                                 });
                                             }
                                         }
-                                        skin.files = files;
-                                        data.skins.Add(skin);
+                                        skin.Files = remoteFiles;
+                                        data.Skins.Add(skin);
                                     }
                                     else
                                     {
                                         // Skin exists on users system check each file in turn.
                                         skinFiles = session.ListDirectory(skinDir.FullName);
-                                        List<RemoteFileInfo> files = new List<RemoteFileInfo>();
+                                        List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
                                         foreach (RemoteFileInfo file in skinFiles.Files)
                                         {
                                             if (cancellationToken.IsCancellationRequested)
                                                 return data;
                                             if (!file.IsDirectory && file.Name != "..")
                                             {
-                                                localPath = Path.Combine(job.acCarsPath, car.Name, "skins", skinDir.Name, file.Name);
+                                                localPath = Path.Combine(job.AcCarsPath, car.Name, "skins", skinDir.Name, file.Name);
                                                 bool required = false;
                                                 if (!File.Exists(localPath))
                                                 {
@@ -702,36 +689,38 @@ namespace AcrlSync.ViewModel
 
                                                 if (required)
                                                 {
-                                                    files.Add(file);
-                                                    data.files += 1;
-                                                    data.size += file.Length;
+                                                    remoteFiles.Add(file);
+                                                    data.Files += 1;
+                                                    data.Size += file.Length;
                                                 }
                                             }
                                         }
-                                        if (files.Count > 0)
+                                        if (remoteFiles.Count > 0)
                                         {
                                             reporter.ReportProgressAsync(() =>
                                             {
-                                                log += string.Format("has new or updated files\n");
-                                                this.skins = data.skinCount.ToString().PadLeft(3);
-                                                this.files = data.files.ToString().PadLeft(3);
-                                                if (data.size == 0)
-                                                    this.size = "0 b";
+                                                Log += string.Format("Has new or updated files\n");
+                                                Skins = data.SkinCount.ToString().PadLeft(3);
+                                                Files = data.Files.ToString().PadLeft(3);
+                                                if (data.Size == 0)
+                                                    Size = "0 b";
                                                 else
-                                                    this.size = ByteSize.FromBytes(data.size).ToString();
+                                                    Size = ByteSize.FromBytes(data.Size).ToString();
                                             });
-                                            Skin skin = new Skin();
-                                            skin.name = skinDir.Name;
-                                            skin.car = car.Name;
-                                            data.skinCount += 1;
-                                            skin.files = files;
-                                            data.skins.Add(skin);
+                                            Skin skin = new Skin
+                                            {
+                                                Name = skinDir.Name,
+                                                Car = car.Name
+                                            };
+                                            data.SkinCount += 1;
+                                            skin.Files = remoteFiles;
+                                            data.Skins.Add(skin);
                                         }
                                         else
                                         {
                                             reporter.ReportProgressAsync(() =>
                                             {
-                                                log += string.Format("\n");
+                                                Log += string.Format("\n");
                                             });
                                         }
                                     }
@@ -744,7 +733,18 @@ namespace AcrlSync.ViewModel
             return data;
         }
 
-        private async void runJob()
+        private bool IsExcluded(List<string> exclusionPatterns, string path)
+        {
+            path = path.ToLowerInvariant();
+            foreach(string pattern in exclusionPatterns)
+            {
+                if (Regex.IsMatch(path, pattern))
+                    return true;
+            }
+            return false;
+        }
+
+        private async void RunJob()
         {
             if (_analyseInProgress || _analysedjob == null)
                 return;
@@ -760,48 +760,53 @@ namespace AcrlSync.ViewModel
                 return;
             }
 
-            runText = "_Cancel";
-            _runInProgress = true;
-            ftpLoaded = false;
+            if (!CheckCarsPath(AcPath))
+            {
+                return;
+            }
 
-            log += "*******************************************************************\n";
-            log += "****                     DOWNLOAD  STARTED                     ****\n";
-            log += "*******************************************************************\n";
-            analysis = await runFtp(analysis, _analysedjob);
-            skins = analysis.skinCount.ToString().PadLeft(3);
-            files = analysis.files.ToString().PadLeft(3);
-            if (analysis.size == 0)
-                size = "0 b";
+            RunText = "_Cancel";
+            _runInProgress = true;
+            FtpLoaded = false;
+
+            Log += "*******************************************************************\n";
+            Log += "****                     DOWNLOAD  STARTED                     ****\n";
+            Log += "*******************************************************************\n";
+            analysis = await RunFtp(analysis, _analysedjob);
+            Skins = analysis.SkinCount.ToString().PadLeft(3);
+            Files = analysis.Files.ToString().PadLeft(3);
+            if (analysis.Size == 0)
+                Size = "0 b";
             else
-                size = ByteSize.FromBytes(analysis.size).ToString();
+                Size = ByteSize.FromBytes(analysis.Size).ToString();
             if (!cancellationTokenSource.IsCancellationRequested)
             {
-                log += "*******************************************************************\n";
-                log += "****                     DOWNLOAD COMPLETE                     ****\n";
-                log += "*******************************************************************\n";
+                Log += "*******************************************************************\n";
+                Log += "****                     DOWNLOAD COMPLETE                     ****\n";
+                Log += "*******************************************************************\n";
             }
             else
             {
-                log += "*******************************************************************\n";
-                log += "****                     DOWNLOAD  ABORTED                     ****\n";
-                log += "*******************************************************************\n";
+                Log += "*******************************************************************\n";
+                Log += "****                     DOWNLOAD  ABORTED                     ****\n";
+                Log += "*******************************************************************\n";
             }
-            runText = "_Run";
+            RunText = "_Run";
             _runInProgress = false;
-            ftpLoaded = true;
+            FtpLoaded = true;
         }
 
         private AnalysisItem BackgroundRun(AnalysisItem data, JobItem job, ProgressReporter reporter)
         {
-            this.cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = this.cancellationTokenSource.Token;
+            cancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = cancellationTokenSource.Token;
 
             using (Session session = new Session())
             {
-                session.Open(ConnectionSettings.options);
+                session.Open(ConnectionSettings.Options);
 
                 string lastCar = null;
-                Queue<Skin> skinQueue = new Queue<Skin>(data.skins);
+                Queue<Skin> skinQueue = new Queue<Skin>(data.Skins);
 
                 while (skinQueue.Count > 0)
                 {
@@ -809,20 +814,20 @@ namespace AcrlSync.ViewModel
                         return data;
 
                     Skin skin = skinQueue.Dequeue();
-                    if (skin.car != lastCar)
+                    if (skin.Car != lastCar)
                         reporter.ReportProgressAsync(() =>
                         {
-                            log += string.Format("Car: {1}\n\tSkin: {0,-40}\n", skin.name, skin.car);
+                            Log += string.Format("Car: {1}\n\tSkin: {0,-40}\n", skin.Name, skin.Car);
                         });
                     else
                         reporter.ReportProgressAsync(() =>
                         {
-                            log += string.Format("\tSkin: {0,-40}\n", skin.name);
+                            Log += string.Format("\tSkin: {0,-40}\n", skin.Name);
                         });
 
-                    string localPath = Path.Combine(job.acCarsPath, skin.car, "skins", skin.name);
+                    string localPath = Path.Combine(job.AcCarsPath, skin.Car, "skins", skin.Name);
                     Directory.CreateDirectory(localPath);
-                    Queue<RemoteFileInfo> fileQueue = new Queue<RemoteFileInfo>(skin.files);
+                    Queue<RemoteFileInfo> fileQueue = new Queue<RemoteFileInfo>(skin.Files);
                     while (fileQueue.Count > 0)
                     {
                         var file = fileQueue.Dequeue();
@@ -831,76 +836,88 @@ namespace AcrlSync.ViewModel
 
                         reporter.ReportProgressAsync(() =>
                         {
-                            log += string.Format("\t\tDownloading: {0,-40}", file.Name);
+                            Log += string.Format("\t\tDownloading: {0,-40}", file.Name);
                         });
 
                         //do the download here
                         string remotePath = file.FullName;
                         session.GetFiles(session.EscapeFileMask(remotePath), Path.Combine(localPath, file.Name)).Check();
-                        data.files -= 1;
-                        data.size -= file.Length;
-                        skin.files.Remove(file);
+                        data.Files -= 1;
+                        data.Size -= file.Length;
+                        skin.Files.Remove(file);
                         reporter.ReportProgressAsync(() =>
                         {
-                            log += string.Format("Done\n");
-                            this.skins = data.skinCount.ToString().PadLeft(3);
-                            this.files = data.files.ToString().PadLeft(3);
-                            if (data.size == 0)
-                                this.size = "0 b";
+                            Log += string.Format("Done\n");
+                            Skins = data.SkinCount.ToString().PadLeft(3);
+                            Files = data.Files.ToString().PadLeft(3);
+                            if (data.Size == 0)
+                                Size = "0 b";
                             else
-                                this.size = ByteSize.FromBytes(data.size).ToString();
+                                Size = ByteSize.FromBytes(data.Size).ToString();
                         });
 
                     }
-                    data.skins.Remove(skin);
-                    data.skinCount -= 1;
+                    data.Skins.Remove(skin);
+                    data.SkinCount -= 1;
                     reporter.ReportProgressAsync(() =>
                     {
-                        this.skins = data.skinCount.ToString().PadLeft(3);
-                        this.files = data.files.ToString().PadLeft(3);
-                        if (data.size == 0)
-                            this.size = "0 b";
+                        Skins = data.SkinCount.ToString().PadLeft(3);
+                        Files = data.Files.ToString().PadLeft(3);
+                        if (data.Size == 0)
+                            Size = "0 b";
                         else
-                            this.size = ByteSize.FromBytes(data.size).ToString();
+                            Size = ByteSize.FromBytes(data.Size).ToString();
                     });
                 }
             }
             return data;
         }
 
-        private void addJob()
+        private void AddJob()
         {
             Messenger.Default.Send<NotificationMessage<JobItem>>(new NotificationMessage<JobItem>(null, "addJob Show"));
         }
 
-        private void findPath()
+        private void FindPath()
         {
-            var dialog = new VistaFolderBrowserDialog();
-            dialog.ShowNewFolderButton = false;
-            dialog.SelectedPath = acPath;
+            var dialog = new VistaFolderBrowserDialog
+            {
+                ShowNewFolderButton = false,
+                SelectedPath = AcPath
+            };
             bool? dr = dialog.ShowDialog();
             if (dr == true)
-                acPath = dialog.SelectedPath;
-
-            string path = AppDomain.CurrentDomain.BaseDirectory;
-            string json = JsonConvert.SerializeObject(acPath, Formatting.Indented);
-            System.IO.File.WriteAllText(path + "/acPath.json", json);
+                AcPath = dialog.SelectedPath;
+            SaveSettingsJson();
         }
 
-        private void switchToUpload()
+        private void SwitchToUpload()
         {
+            if (!CheckCarsPath(AcPath))
+            {
+                return;
+            }
+
             var files = new List<string>();
-            DirectoryInfo tPath = Directory.GetParent(acPath);
+            DirectoryInfo tPath = Directory.GetParent(AcPath);
             string path = tPath.Parent.FullName;
 
             Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(path, "uploadSkin Show"));
         }
 
-        ////public override void Cleanup()
-        ////{
-        ////    // Clean up if needed
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-        ////    base.Cleanup();
-        ////}
+        protected virtual void Dispose(bool all)
+        {
+            if (cancellationTokenSource != null)
+            {
+                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
+            }
+        }
     }
 }

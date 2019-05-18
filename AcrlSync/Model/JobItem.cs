@@ -13,62 +13,82 @@ namespace AcrlSync.Model
             Password = "pword",
         };
 
-        static public SessionOptions options { get { return sessionOptions; } }
-        static public void setHost(string ip)
+        static public SessionOptions Options { get { return sessionOptions; } }
+        static public void SetHost(string ip)
         {
             sessionOptions.HostName = ip;
         }
     }
-    
+
+    public class GeneralSettings
+    {
+        private string _CarsDirectory;
+        private string[] _ExcludedSkins;
+
+        public string CarsDirectory { get { return _CarsDirectory; } set { _CarsDirectory = value; } }
+        public string[] ExcludedSkins { get { return _ExcludedSkins; } set { _ExcludedSkins = value; } }
+
+        public GeneralSettings()
+        {
+            _CarsDirectory = "";
+            _ExcludedSkins = null;
+        }
+
+        public GeneralSettings(string CarDir, string ExcludedStr)
+        {
+            _CarsDirectory = CarDir;
+            _ExcludedSkins = ExcludedStr.Split(':');
+        }
+    }
+
     static public class Jobs
     {
         static public string acCarsPath = "acCarPath";
-        static public void setCarsPath(string path)
+        static public void SetCarsPath(string path)
         {
             acCarsPath = path;
         }
         static public string acPath = "acPath";
-        static public void setPath(string path)
+        static public void SetPath(string path)
         {
             acPath = path;
         }
-        //public IList<string> ftpPath { get; set; }
     }
 
     public class JobItem
     {
-        public string name { get; set; }
-        public List<string> ftpPath { get; set; }
-        public string acCarsPath { get; set; }
+        public string Name { get; set; }
+        public List<string> FtpPath { get; set; }
+        public string AcCarsPath { get; set; }
 
         public JobItem()
         {
-            ftpPath = new List<string>();
+            FtpPath = new List<string>();
         }
     }
 
     public class AnalysisItem
     {
-        public int skinCount { get; set; }
-        public int files { get; set; }
-        public long size { get; set; }
+        public int SkinCount { get; set; }
+        public int Files { get; set; }
+        public long Size { get; set; }
 
-        public List<Skin> skins { get; set; }
+        public List<Skin> Skins { get; set; }
         public AnalysisItem()
         {
-            skins = new List<Skin>();
+            Skins = new List<Skin>();
         }
     }
 
     public class Skin
     {
-        public string name { get; set; }
-        public string car { get; set; }
-        public List<RemoteFileInfo> files {get; set;}
+        public string Name { get; set; }
+        public string Car { get; set; }
+        public List<RemoteFileInfo> Files {get; set;}
 
         public Skin()
         {
-            files = new List<RemoteFileInfo>();
+            Files = new List<RemoteFileInfo>();
         }
     }
 }
