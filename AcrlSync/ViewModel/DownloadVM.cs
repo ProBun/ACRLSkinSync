@@ -288,7 +288,7 @@ namespace AcrlSync.ViewModel
         private string _exclusionString;
         public string ExclusionString
         {
-            get { return _exclusionString; }
+            get => _exclusionString;
             set { _exclusionString = value; RaisePropertyChanged(() => ExclusionString); }
         }
 
@@ -532,7 +532,7 @@ namespace AcrlSync.ViewModel
             {
                 if (item.IsChecked == true)
                 {
-                    if (!CheckCarsPath(getPath(item.Game)))
+                    if (!CheckCarsPath(item.Game))
                     {
                         return;
                     }
