@@ -1,9 +1,9 @@
 {
   "Protocol": 2,
-  "HostName": "host",
+  "HostName": "acrl.rackservice.org",
   "PortNumber": 0,
-  "UserName": "user",
-  "Password": "password",
+  "UserName": "acrlUser",
+  "Password": "RaceRace",
   "SecurePassword": {
     "Length": 8
   },

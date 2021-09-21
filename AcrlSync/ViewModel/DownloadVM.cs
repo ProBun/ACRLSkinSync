@@ -11,8 +11,10 @@ using ByteSizeLib;
 using WinSCP;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.CSharp.RuntimeBinder;
 using Ookii.Dialogs.Wpf;
 
 namespace AcrlSync.ViewModel
@@ -44,6 +46,20 @@ namespace AcrlSync.ViewModel
             {
                 _isChecked = value;
                 RaisePropertyChanged(() => IsChecked);
+            }
+        }
+
+        public string Game
+        {
+            get
+            {
+                int pos = _downloadPath.LastIndexOf("/", StringComparison.Ordinal) + 1;
+                if (pos != 0 && _downloadPath.Length > pos+3 && _downloadPath.Substring(pos, 3) == "ACC")
+                {
+                    return "ACC";
+                }
+
+                return "AC";
             }
         }
 
@@ -169,18 +185,29 @@ namespace AcrlSync.ViewModel
             set { _ftpLoaded = value; RaisePropertyChanged(() => FtpLoaded); }
         }
 
-        private string _acPath;
-        public string AcPath
+        private Dictionary<string, string> _paths;
+        public string getPath(string game)
         {
-            get { return _acPath; }
-            set
+            if (!_paths.ContainsKey(game))
             {
-                _acPath = value;
-                RaisePropertyChanged(() => AcPath);
-
-                Model.Jobs.SetPath(value);
+                return "";
             }
+            return _paths[game];
         }
+
+        public void setPath(string game, string path)
+        {
+            if (_paths.ContainsKey(game))
+            {
+                _paths[game] = path;
+                return;
+            }
+            _paths.Add(game, path);
+        }
+        
+        public string AcPath => getPath("AC");
+
+        public string AccPath => getPath("ACC");
 
         private string _exclusionString;
         public string ExclusionString
@@ -201,8 +228,8 @@ namespace AcrlSync.ViewModel
         public RelayCommand AddClick { get; set; }
         public RelayCommand AnalyseClick { get; set; }
         public RelayCommand RunClick { get; set; }
-        public RelayCommand FindClick { get; set; }
-        public RelayCommand UploadClick { get; set; }
+        public RelayCommand FindAcClick { get; }
+        public RelayCommand FindAccClick { get; }
 
         private List<Tree> _seasons;
         public List<Tree> Seasons
@@ -227,13 +254,13 @@ namespace AcrlSync.ViewModel
             }
         }
 
-        private bool CheckCarsPath(string path)
+        private bool CheckCarsPath(string game)
         {
-            bool exists = Directory.Exists(path);
+            bool exists = Directory.Exists(getPath(game));
 
             if (!exists)
             {
-                System.Windows.Forms.MessageBox.Show(string.Format("The AC Cars Path: \"{0}\" doesn't exist.\n\nPlease create the folder or update the path.", path), "Cars folder not found.",
+                System.Windows.Forms.MessageBox.Show(string.Format("The \"{0}\" Cars Path: \"{1}\" doesn't exist.\n\nPlease create the folder or update the path.", game, getPath(game)), "Cars folder not found.",
                     System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Error);
             }
@@ -247,7 +274,9 @@ namespace AcrlSync.ViewModel
         public DownloadVM(IFtpService dataService)
         {
             _ftpAddress = ConnectionSettings.Options.HostName;
-            _acPath = Model.Jobs.acCarsPath;
+            _paths = new Dictionary<string, string>();
+            setPath("AC", Model.Jobs.acCarsPath);
+            setPath("ACC", Model.Jobs.accCarsPath);
 
             LoadConnectionJson();
             LoadSettingsJson();
@@ -261,8 +290,8 @@ namespace AcrlSync.ViewModel
             AnalyseClick = new RelayCommand(AnalyseJob);
             RunClick = new RelayCommand(RunJob);
             FtpClick = new RelayCommand(Reinitialise);
-            FindClick = new RelayCommand(FindPath);
-            UploadClick = new RelayCommand(SwitchToUpload);
+            FindAcClick = new RelayCommand(FindAcPath);
+            FindAccClick = new RelayCommand(FindAccPath);
 
             _dataService = dataService;
             _log = string.Empty;
@@ -275,7 +304,7 @@ namespace AcrlSync.ViewModel
             _analyseInProgress = false;
             _runInProgress = false;
 
-            _analysisText = "A_nalyse";
+            _analysisText = "_Analyse";
             _runText = "_Run";
 
             Messenger.Default.Register<NotificationMessage<string>>(this, (message) =>
@@ -313,6 +342,7 @@ namespace AcrlSync.ViewModel
         {
             // Write the setting to disk. No need to save connection that updates on edit.
             SaveSettingsJson();
+            _paths = new Dictionary<string, string>();
         }
 
         private void FlattenTree(Tree input, string parent, List<OptionItem> output, int level = 0)
@@ -387,7 +417,8 @@ namespace AcrlSync.ViewModel
                 string path = AppDomain.CurrentDomain.BaseDirectory;
                 string json = System.IO.File.ReadAllText(path + "/settings.json");
                 GeneralSettings settings = JsonConvert.DeserializeObject<GeneralSettings>(json);
-                _acPath = settings.CarsDirectory;
+                setPath("AC", settings.AcCarsDirectory);
+                setPath("ACC", settings.AccCarsDirectory);
                 if (settings.ExcludedSkins.Length > 0)
                 {
                     _exclusionString = string.Join(":", settings.ExcludedSkins);
@@ -395,7 +426,7 @@ namespace AcrlSync.ViewModel
             }
             catch(FileNotFoundException)
             {
-                _acPath = "";
+                _paths = new Dictionary<string, string>();
                 _exclusionString = "";
                 SaveSettingsJson();
             }
@@ -403,7 +434,7 @@ namespace AcrlSync.ViewModel
 
         private void SaveSettingsJson()
         {
-            var GeneralSettings = new GeneralSettings(AcPath, ExclusionString);
+            var GeneralSettings = new GeneralSettings(getPath("AC"), getPath("ACC"), ExclusionString);
             string json = JsonConvert.SerializeObject(GeneralSettings, Formatting.Indented);
             string path = AppDomain.CurrentDomain.BaseDirectory;
             System.IO.File.WriteAllText(path + "/settings.json", json);
@@ -411,7 +442,6 @@ namespace AcrlSync.ViewModel
 
         private async void AnalyseJob()
         {
-
             if (_runInProgress)
                 return;
 
@@ -421,23 +451,20 @@ namespace AcrlSync.ViewModel
                 return;
             }
 
-            if (!CheckCarsPath(AcPath))
-            {
-                return;
-            }
-
-            SelectedJob = new JobItem
-            {
-                AcCarsPath = AcPath
-            };
+            SelectedJob = new JobItem();
             foreach (OptionItem item in Options)
             {
                 if (item.IsChecked == true)
                 {
-                    SelectedJob.FtpPath.Add(item.DownloadPath);
+                    if (!CheckCarsPath(getPath(item.Game)))
+                    {
+                        return;
+                    }
+                    
+                    SelectedJob.Items.Add(new Item(item.DownloadPath, item.Game));
                 }
             }
-            if (SelectedJob.FtpPath.Count < 1)
+            if (SelectedJob.Items.Count < 1)
             {
                 System.Windows.MessageBox.Show("No series selected", "Check some series", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return;
@@ -553,13 +580,13 @@ namespace AcrlSync.ViewModel
                     System.Console.WriteLine(e.Message);
                     return null;
                 }
-
-                string localPath = job.AcCarsPath;
-                foreach (string remotePath in job.FtpPath)
+                
+                foreach (Item item in job.Items)
                 {
+                    string localPath;
                     // Open the folder for the series and get the list of car folders.
                     try {
-                        carInfo = session.ListDirectory(remotePath);
+                        carInfo = session.ListDirectory(item.FTPPath);
                     }
                     catch (WinSCP.SessionRemoteException e) {
                         Log += string.Format("{0}\n", e.Message);
@@ -580,7 +607,7 @@ namespace AcrlSync.ViewModel
                             });
 
                             // Navigate to the skins folder and get a list its contents
-                            localPath = Path.Combine(job.AcCarsPath, car.Name, "skins");
+                            localPath = Path.Combine(getPath(item.Game), car.Name, "skins");
                             try {
                                 skinInfo = session.ListDirectory(car.FullName + "/skins");
                             }
@@ -605,7 +632,7 @@ namespace AcrlSync.ViewModel
                                     {
                                         Log += string.Format("\tSkin: {0,-40}", skinDir.Name);
                                     });
-                                    localPath = Path.Combine(job.AcCarsPath, car.Name, "skins", skinDir.Name);
+                                    localPath = Path.Combine(getPath(item.Game), car.Name, "skins", skinDir.Name);
                                     if (IsExcluded(exclusionPatterns, Path.Combine(car.Name, "skins", skinDir.Name)))
                                     {
                                         // Skin is Excluded! Skip it
@@ -670,7 +697,7 @@ namespace AcrlSync.ViewModel
                                                 return data;
                                             if (!file.IsDirectory && file.Name != "..")
                                             {
-                                                localPath = Path.Combine(job.AcCarsPath, car.Name, "skins", skinDir.Name, file.Name);
+                                                localPath = Path.Combine(getPath(item.Game), car.Name, "skins", skinDir.Name, file.Name);
                                                 bool required = false;
                                                 if (!File.Exists(localPath))
                                                 {
@@ -760,11 +787,6 @@ namespace AcrlSync.ViewModel
                 return;
             }
 
-            if (!CheckCarsPath(AcPath))
-            {
-                return;
-            }
-
             RunText = "_Cancel";
             _runInProgress = true;
             FtpLoaded = false;
@@ -825,7 +847,8 @@ namespace AcrlSync.ViewModel
                             Log += string.Format("\tSkin: {0,-40}\n", skin.Name);
                         });
 
-                    string localPath = Path.Combine(job.AcCarsPath, skin.Car, "skins", skin.Name);
+                    //todo
+                    string localPath = Path.Combine(getPath("AC"), skin.Car, "skins", skin.Name);
                     Directory.CreateDirectory(localPath);
                     Queue<RemoteFileInfo> fileQueue = new Queue<RemoteFileInfo>(skin.Files);
                     while (fileQueue.Count > 0)
@@ -878,31 +901,30 @@ namespace AcrlSync.ViewModel
             Messenger.Default.Send<NotificationMessage<JobItem>>(new NotificationMessage<JobItem>(null, "addJob Show"));
         }
 
-        private void FindPath()
+        private void FindAcPath()
         {
             var dialog = new VistaFolderBrowserDialog
             {
                 ShowNewFolderButton = false,
-                SelectedPath = AcPath
+                SelectedPath = getPath("AC")
             };
             bool? dr = dialog.ShowDialog();
             if (dr == true)
-                AcPath = dialog.SelectedPath;
+                setPath("AC", dialog.SelectedPath);
             SaveSettingsJson();
         }
 
-        private void SwitchToUpload()
+        private void FindAccPath()
         {
-            if (!CheckCarsPath(AcPath))
+            var dialog = new VistaFolderBrowserDialog
             {
-                return;
-            }
-
-            var files = new List<string>();
-            DirectoryInfo tPath = Directory.GetParent(AcPath);
-            string path = tPath.Parent.FullName;
-
-            Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(path, "uploadSkin Show"));
+                ShowNewFolderButton = false,
+                SelectedPath = getPath("ACC")
+            };
+            bool? dr = dialog.ShowDialog();
+            if (dr == true)
+                setPath("ACC", dialog.SelectedPath);
+            SaveSettingsJson();
         }
 
         public void Dispose()

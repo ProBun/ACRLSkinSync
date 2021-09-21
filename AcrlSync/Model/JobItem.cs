@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Windows.Forms.VisualStyles;
 using WinSCP;
 
 namespace AcrlSync.Model
@@ -22,21 +23,24 @@ namespace AcrlSync.Model
 
     public class GeneralSettings
     {
-        private string _CarsDirectory;
+        private string _AcCarsDirectory;
+        private string _AccCarsDirectory;
         private string[] _ExcludedSkins;
 
-        public string CarsDirectory { get { return _CarsDirectory; } set { _CarsDirectory = value; } }
+        public string AcCarsDirectory { get { return _AcCarsDirectory; } set { _AcCarsDirectory = value; } }
+        public string AccCarsDirectory { get { return _AccCarsDirectory; } set { _AccCarsDirectory = value; } }
         public string[] ExcludedSkins { get { return _ExcludedSkins; } set { _ExcludedSkins = value; } }
 
         public GeneralSettings()
         {
-            _CarsDirectory = "";
+            _AcCarsDirectory = "";
             _ExcludedSkins = null;
         }
 
-        public GeneralSettings(string CarDir, string ExcludedStr)
+        public GeneralSettings(string acCarDir, string accCarDir, string ExcludedStr)
         {
-            _CarsDirectory = CarDir;
+            _AcCarsDirectory = acCarDir;
+            _AccCarsDirectory = accCarDir;
             _ExcludedSkins = ExcludedStr.Split(':');
         }
     }
@@ -44,26 +48,43 @@ namespace AcrlSync.Model
     static public class Jobs
     {
         static public string acCarsPath = "acCarPath";
+        static public string accCarsPath = "accCarPath";
         static public void SetCarsPath(string path)
         {
             acCarsPath = path;
         }
         static public string acPath = "acPath";
-        static public void SetPath(string path)
+        static public void SetAcPath(string path)
         {
             acPath = path;
+        }
+        static public string accPath = "accPath";
+        static public void SetAccPath(string path)
+        {
+            accPath = path;
         }
     }
 
     public class JobItem
     {
         public string Name { get; set; }
-        public List<string> FtpPath { get; set; }
-        public string AcCarsPath { get; set; }
+        public List<Item> Items { get; }
 
         public JobItem()
         {
-            FtpPath = new List<string>();
+            Items = new List<Item>();
+        }
+    }
+
+    public class Item
+    {
+        public string FTPPath { get; set; }
+        public string Game { get; set; }
+
+        public Item(string ftpPath, string game)
+        {
+            FTPPath = ftpPath;
+            Game = game;
         }
     }
 

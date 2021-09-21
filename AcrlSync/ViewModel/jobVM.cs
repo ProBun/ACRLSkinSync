@@ -155,7 +155,6 @@ namespace AcrlSync.ViewModel
                         _editItem = message.Content;
                         Name = message.Content.Name;
                         //selected = message.Content.ftpPath;
-                        AcPath = message.Content.AcCarsPath;
                         ShowErrors = false;
                     }
                     else
@@ -202,7 +201,6 @@ namespace AcrlSync.ViewModel
             JobItem newJob = new JobItem()
             {
                 Name = this.Name,
-                AcCarsPath = AcPath,
                 //ftpPath = selected
             };
 
