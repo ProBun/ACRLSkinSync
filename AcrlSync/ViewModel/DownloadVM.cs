@@ -814,7 +814,8 @@ namespace AcrlSync.ViewModel
                                             Skin skin = new Skin
                                             {
                                                 Name = skinDir.Name,
-                                                Car = car.Name
+                                                Car = car.Name,
+                                                Game = item.Game
                                             };
                                             data.SkinCount += 1;
                                             skin.Files = remoteFiles;
