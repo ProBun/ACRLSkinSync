@@ -105,6 +105,7 @@ namespace AcrlSync.Model
     {
         public string Name { get; set; }
         public string Car { get; set; }
+        public string Game { get; set; }
         public List<RemoteFileInfo> Files {get; set;}
 
         public Skin()

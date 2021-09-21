@@ -727,7 +727,8 @@ namespace AcrlSync.ViewModel
                                         Skin skin = new Skin
                                         {
                                             Name = skinDir.Name,
-                                            Car = car.Name
+                                            Car = car.Name,
+                                            Game = item.Game
                                         };
                                         data.SkinCount += 1;
                                         try { // Don't think this one can actually fail. As listing contents of dir we know exists.
@@ -923,8 +924,7 @@ namespace AcrlSync.ViewModel
                             Log += string.Format("\tSkin: {0,-40}\n", skin.Name);
                         });
 
-                    //todo
-                    string localPath = Path.Combine(getPath("AC"), skin.Car, "skins", skin.Name);
+                    string localPath = Path.Combine(getPath(skin.Game), skin.Car, "skins", skin.Name);
                     Directory.CreateDirectory(localPath);
                     Queue<RemoteFileInfo> fileQueue = new Queue<RemoteFileInfo>(skin.Files);
                     while (fileQueue.Count > 0)
