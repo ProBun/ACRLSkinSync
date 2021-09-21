@@ -87,76 +87,127 @@ namespace AcrlSync.ViewModel
         private CancellationTokenSource cancellationTokenSource;
 
         private ObservableCollection<JobItem> _jobs;
+
         public ObservableCollection<JobItem> Jobs
         {
             get { return _jobs; }
-            set { _jobs = value; RaisePropertyChanged(() => Jobs); }
+            set
+            {
+                _jobs = value;
+                RaisePropertyChanged(() => Jobs);
+            }
         }
 
         private JobItem _selectedJob;
+
         public JobItem SelectedJob
         {
             get { return _selectedJob; }
-            set { _selectedJob = value; RaisePropertyChanged(() => SelectedJob); }
+            set
+            {
+                _selectedJob = value;
+                RaisePropertyChanged(() => SelectedJob);
+            }
         }
 
         private string _log;
+
         public string Log
         {
             get { return _log; }
-            set { _log = value; RaisePropertyChanged(() => Log); }
+            set
+            {
+                _log = value;
+                RaisePropertyChanged(() => Log);
+            }
         }
 
         private string _skins;
+
         public string Skins
         {
             get { return _skins; }
-            set { _skins = value; RaisePropertyChanged(() => Skins); }
+            set
+            {
+                _skins = value;
+                RaisePropertyChanged(() => Skins);
+            }
         }
 
         private string _analysisText;
+
         public string AnalysisText
         {
             get { return _analysisText; }
-            set { _analysisText = value; RaisePropertyChanged(() => AnalysisText); }
+            set
+            {
+                _analysisText = value;
+                RaisePropertyChanged(() => AnalysisText);
+            }
         }
 
         private string _runText;
+
         public string RunText
         {
             get { return _runText; }
-            set { _runText = value; RaisePropertyChanged(() => RunText); }
+            set
+            {
+                _runText = value;
+                RaisePropertyChanged(() => RunText);
+            }
         }
 
         private string _size;
+
         public string Size
         {
             get { return _size; }
-            set { _size = value; RaisePropertyChanged(() => Size); }
+            set
+            {
+                _size = value;
+                RaisePropertyChanged(() => Size);
+            }
         }
 
         private string _files;
+
         public string Files
         {
             get { return _files; }
-            set { _files = value; RaisePropertyChanged(() => Files); }
+            set
+            {
+                _files = value;
+                RaisePropertyChanged(() => Files);
+            }
         }
 
         private bool _treeLoaded;
+
         public bool TreeLoaded
         {
             get { return _treeLoaded; }
-            set { _treeLoaded = value; RaisePropertyChanged(() => TreeLoaded); }
+            set
+            {
+                _treeLoaded = value;
+                RaisePropertyChanged(() => TreeLoaded);
+            }
         }
 
         private string _loading;
+
         public string Loading
         {
             get { return _loading; }
-            set { _loading = value; RaisePropertyChanged(() => Loading); }
+            set
+            {
+                _loading = value;
+                RaisePropertyChanged(() => Loading);
+            }
         }
 
         private string _ftpAddress;
+
         public string FtpAddress
         {
             get { return _ftpAddress; }
@@ -172,42 +223,63 @@ namespace AcrlSync.ViewModel
         }
 
         private string _ftpError;
+
         public string FtpError
         {
             get { return _ftpError; }
-            set { _ftpError = value; RaisePropertyChanged(() => FtpError); }
+            set
+            {
+                _ftpError = value;
+                RaisePropertyChanged(() => FtpError);
+            }
         }
 
         private bool _ftpLoaded;
+
         public bool FtpLoaded
         {
             get { return _ftpLoaded; }
-            set { _ftpLoaded = value; RaisePropertyChanged(() => FtpLoaded); }
+            set
+            {
+                _ftpLoaded = value;
+                RaisePropertyChanged(() => FtpLoaded);
+            }
         }
 
         private Dictionary<string, string> _paths;
-        public string getPath(string game)
+
+        private string getPath(string game)
         {
             if (!_paths.ContainsKey(game))
             {
                 return "";
             }
+
             return _paths[game];
         }
 
-        public void setPath(string game, string path)
+        private void setPath(string game, string path)
         {
             if (_paths.ContainsKey(game))
             {
                 _paths[game] = path;
                 return;
             }
+
             _paths.Add(game, path);
         }
-        
-        public string AcPath => getPath("AC");
 
-        public string AccPath => getPath("ACC");
+        public string AcPath
+        {
+            get => getPath("AC");
+            set => setPath("AC", value);
+        }
+
+        public string AccPath
+        {
+            get => getPath("ACC");
+            set => setPath("ACC", value);
+        }
 
         private string _exclusionString;
         public string ExclusionString
