@@ -11,6 +11,7 @@ using ByteSizeLib;
 using WinSCP;
 using System.IO;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading;
@@ -263,19 +264,22 @@ namespace AcrlSync.ViewModel
             if (_paths.ContainsKey(game))
             {
                 _paths[game] = path;
-                return;
+            }
+            else
+            {
+                _paths.Add(game, path);
             }
 
-            _paths.Add(game, path);
+            RaisePropertyChanged(game + "Path");
         }
 
-        public string AcPath
+        public string ACPath
         {
             get => getPath("AC");
             set => setPath("AC", value);
         }
 
-        public string AccPath
+        public string ACCPath
         {
             get => getPath("ACC");
             set => setPath("ACC", value);
