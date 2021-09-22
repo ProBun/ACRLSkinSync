@@ -29,7 +29,6 @@ namespace AcrlSync.ViewModel
         }
 
         private readonly DownloadVM downloadVM;
-        private readonly UploadSkinVM uploadVM;
 
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
@@ -39,34 +38,8 @@ namespace AcrlSync.ViewModel
             _dataService = dataService;
             ViewModelLocator locator = (App.Current.Resources["Locator"] as ViewModelLocator);
             downloadVM = locator.DownloadVM;
-            uploadVM = locator.UploadVM;
 
             _currentVM = downloadVM;
-
-            Messenger.Default.Register<NotificationMessage<string>>(this, (message) =>
-            {
-                if (message.Notification == "uploadSkin Show")
-                {
-                    Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(message.Content, "upload"));
-                    SwitchVM();
-                }
-            });
-
-            Messenger.Default.Register<NotificationMessage>(this, (message) =>
-            {
-                if (message.Notification == "Switch View")
-                {
-                    SwitchVM();
-                }
-            });
-        }
-
-        private void SwitchVM()
-        {
-            if (CurrentVM == downloadVM)
-                CurrentVM = uploadVM;
-            else
-                CurrentVM = downloadVM;
         }
     }
 }
