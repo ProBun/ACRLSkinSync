@@ -2,6 +2,7 @@
 using WinSCP;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using GalaSoft.MvvmLight.Messaging;
 
 namespace AcrlSync.Model
@@ -20,8 +21,7 @@ namespace AcrlSync.Model
 
         private async void GetTree(string root)
         {
-     
-            List<List<RemoteFileInfo>> fileData = await BackgroundGetTree("/"+root);
+            List<RemoteFileInfo> fileData = await GetSeasons("/"+root);
 
             if (fileData == null)
             {
@@ -36,31 +36,31 @@ namespace AcrlSync.Model
 
             foreach (var dir in fileData)
             {
-                if (dir.Count > 1)
-                {
-                    Children.Add(new Tree(dir[0].Name, dir[0].FullName,Name));
-                    dir.Remove(dir[0]);
-                    parent = Children.Last();
-                    foreach (var dir2 in dir)
-                    {
-                        if (parent2 != null && dir2.FullName.StartsWith(parent2.FullName))
-                        {
-                            parent2.Children.Add(new Tree(dir2.Name, dir2.FullName, parent2.Name));
-                        }
-                        else
-                        {
-                            parent.Children.Add(new Tree(dir2.Name, dir2.FullName, parent.Name));
-                            parent2 = parent.Children.Last();
-                        }
-                    }
-                }
+                // if (dir.Count > 1)
+                // {
+                //     Children.Add(new Tree(dir[0].Name, dir[0].FullName,Name));
+                //     dir.Remove(dir[0]);
+                //     parent = Children.Last();
+                //     foreach (var dir2 in dir)
+                //     {
+                //         if (parent2 != null && dir2.FullName.StartsWith(parent2.FullName))
+                //         {
+                //             parent2.Children.Add(new Tree(dir2.Name, dir2.FullName, parent2.Name));
+                //         }
+                //         else
+                //         {
+                //             parent.Children.Add(new Tree(dir2.Name, dir2.FullName, parent.Name));
+                //             parent2 = parent.Children.Last();
+                //         }
+                //     }
+                // }
             }
             Messenger.Default.Send<NotificationMessage<string>>(new NotificationMessage<string>(root,"Tree Loaded"));
         }
 
-        private Task<List<List<RemoteFileInfo>>> BackgroundGetTree(string root)
+        private Task<List<RemoteFileInfo>> GetSeasons(string root)
         {
-            Task<List<List<RemoteFileInfo>>> t = new Task<List<List<RemoteFileInfo>>>(() => 
+            Task<List<RemoteFileInfo>> t = new Task<List<RemoteFileInfo>>(() => 
             {
                 using (Session session = new Session())
                 {
@@ -73,7 +73,7 @@ namespace AcrlSync.Model
                     }
                     string remotePath = root;
 
-                    List<List<RemoteFileInfo>> allFiles = new List<List<RemoteFileInfo>>();
+                    List<RemoteFileInfo> seasons = new List<RemoteFileInfo>();
 
                     // Get list of files in the directory
                     RemoteDirectoryInfo directoryInfo = session.ListDirectory(remotePath);
@@ -82,29 +82,25 @@ namespace AcrlSync.Model
                     {
                         if (item.IsDirectory && item.Name != "..")
                         {
-                            List<RemoteFileInfo> files = new List<RemoteFileInfo>();
                             RemoteDirectoryInfo directoryInfoTwo = session.ListDirectory(item.FullName);
-                            files.Add(item);
+
                             foreach (RemoteFileInfo itemTwo in directoryInfoTwo.Files)
                             {
                                 if (itemTwo.IsDirectory && itemTwo.Name != "..")
                                 {
-                                    files.Add(itemTwo);
-
                                     RemoteDirectoryInfo directoryInfoThree = session.ListDirectory(itemTwo.FullName);
                                     foreach (RemoteFileInfo itemThree in directoryInfoThree.Files)
                                     {
                                         if (itemThree.IsDirectory && itemThree.Name != "..")
                                         {
-                                            files.Add(itemThree);
+                                            seasons.Add(itemThree);
                                         }
                                     }
                                 }
                             }
-                            allFiles.Add(files);
                         }
                     }
-                    return(allFiles);
+                    return(seasons);
                 }
             });
             t.Start();

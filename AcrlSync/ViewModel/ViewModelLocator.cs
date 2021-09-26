@@ -29,7 +29,6 @@ namespace AcrlSync.ViewModel
         {
             ServiceLocator.SetLocatorProvider(() => SimpleIoc.Default);
 
-            SimpleIoc.Default.Register<IFtpService, FtpService>();
             SimpleIoc.Default.Register<MainViewModel>();
             SimpleIoc.Default.Register<JobVM>();
             SimpleIoc.Default.Register<DownloadVM>();

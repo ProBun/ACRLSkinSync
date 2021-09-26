@@ -54,19 +54,22 @@ namespace AcrlSync.ViewModel
         {
             get
             {
-                int pos = _downloadPath.LastIndexOf("/", StringComparison.Ordinal) + 1;
-                if (pos != 0 && _downloadPath.Length > pos+3 && _downloadPath.Substring(pos, 3) == "ACC")
-                {
-                    return "ACC";
-                }
-
-                return "AC";
+                // int pos = _downloadPath.LastIndexOf("/", StringComparison.Ordinal) + 1;
+                // if (pos != 0 && _downloadPath.Length > pos+3 && _downloadPath.Substring(pos, 3) == "ACC")
+                // {
+                //     return "ACC";
+                // }
+                //
+                // return "AC";
+                return _game;
             }
+            set { _game = value;  }
         }
 
         private string _name;
         private string _downloadPath;
         private bool? _isChecked;
+        private string _game;
 
         public OptionItem()
         {
@@ -83,8 +86,6 @@ namespace AcrlSync.ViewModel
     /// </summary>
     public class DownloadVM : ViewModelBase, IDisposable
     {
-        private readonly IFtpService _dataService;
-
         private CancellationTokenSource cancellationTokenSource;
 
         private ObservableCollection<JobItem> _jobs;
@@ -347,7 +348,7 @@ namespace AcrlSync.ViewModel
         /// <summary>
         /// Initializes a new instance of the DownloadVM class.
         /// </summary>
-        public DownloadVM(IFtpService dataService)
+        public DownloadVM()
         {
             _ftpAddress = ConnectionSettings.Options.HostName;
             _paths = new Dictionary<string, string>();
@@ -369,7 +370,6 @@ namespace AcrlSync.ViewModel
             FindAcClick = new RelayCommand(FindAcPath);
             FindAccClick = new RelayCommand(FindAccPath);
 
-            _dataService = dataService;
             _log = string.Empty;
 
             _loading = "Loading data from FTP";
@@ -393,13 +393,7 @@ namespace AcrlSync.ViewModel
                         TreeLoaded = true;
                         FtpLoaded = true;
                         FtpError = "";
-
-                        List<OptionItem> list = new List<OptionItem>();
-                        foreach (Tree s in _seasons)
-                        {
-                            FlattenTree(s, "", list);
-                        }
-                        Options = list;
+                        Options = GetSeasons("/Download");
                     }
                     if (message.Notification == "Connection Failure")
                     {
@@ -421,24 +415,56 @@ namespace AcrlSync.ViewModel
             _paths = new Dictionary<string, string>();
         }
 
-        private void FlattenTree(Tree input, string parent, List<OptionItem> output, int level = 0)
+        private List<OptionItem> GetSeasons(string root)
         {
-            int maxLevel = 2;
-
-            if (level == maxLevel)
+            using (Session session = new Session())
             {
-                OptionItem item = new OptionItem
+                try
+                { session.Open(ConnectionSettings.Options); }
+                catch(WinSCP.SessionRemoteException e)
                 {
-                    Name = String.Format("{0} \u2013 {1}", parent, input.Name),
-                    DownloadPath = input.FullName,
-                    IsChecked = false
-                };
-                output.Add(item);
-            }
-            else
-            {
-                foreach (Tree child in input.Children)
-                    FlattenTree(child, input.Name, output, level + 1);
+                    System.Console.WriteLine(e.Message);
+                    return null;
+                }
+                string remotePath = root;
+
+                List<OptionItem> seasons = new List<OptionItem>();
+
+                // Get list of files in the directory
+                RemoteDirectoryInfo directoryInfo = session.ListDirectory(remotePath);
+
+                foreach (RemoteFileInfo item in directoryInfo.Files)
+                {
+                    if (item.IsDirectory && item.Name != "..")
+                    {
+                        RemoteDirectoryInfo directoryInfoTwo = session.ListDirectory(item.FullName);
+
+                        foreach (RemoteFileInfo itemTwo in directoryInfoTwo.Files)
+                        {
+                            if (itemTwo.IsDirectory && itemTwo.Name != "..")
+                            {
+                                RemoteDirectoryInfo directoryInfoThree = session.ListDirectory(itemTwo.FullName);
+                                foreach (RemoteFileInfo itemThree in directoryInfoThree.Files)
+                                {
+                                    if (itemThree.IsDirectory && itemThree.Name != "..")
+                                    {
+                                        string[] words = itemThree.FullName.Split('/');
+                                        
+                                        OptionItem optionItem = new OptionItem
+                                        {
+                                            Name = words[2] + " - " + words[3] + " - " + words[4],
+                                            DownloadPath = itemThree.FullName,
+                                            IsChecked = false,
+                                            Game = words[3]
+                                        };
+                                        seasons.Add(optionItem);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                return(seasons);
             }
         }
 

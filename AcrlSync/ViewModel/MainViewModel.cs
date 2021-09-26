@@ -15,8 +15,6 @@ namespace AcrlSync.ViewModel
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        private readonly IFtpService _dataService;
-
         private ViewModelBase _currentVM;
         public ViewModelBase CurrentVM
         {
@@ -33,9 +31,8 @@ namespace AcrlSync.ViewModel
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
-        public MainViewModel(IFtpService dataService)
+        public MainViewModel()
         {
-            _dataService = dataService;
             ViewModelLocator locator = (App.Current.Resources["Locator"] as ViewModelLocator);
             downloadVM = locator.DownloadVM;
 
