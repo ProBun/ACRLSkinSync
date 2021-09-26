@@ -31,6 +31,7 @@ namespace AcrlSync.ViewModel
                 RaisePropertyChanged(() => Name);
             }
         }
+
         public string DownloadPath
         {
             get { return _downloadPath; }
@@ -40,6 +41,7 @@ namespace AcrlSync.ViewModel
                 RaisePropertyChanged(() => DownloadPath);
             }
         }
+
         public bool? IsChecked
         {
             get { return _isChecked; }
@@ -63,7 +65,7 @@ namespace AcrlSync.ViewModel
                 // return "AC";
                 return _game;
             }
-            set { _game = value;  }
+            set { _game = value; }
         }
 
         private string _name;
@@ -287,10 +289,15 @@ namespace AcrlSync.ViewModel
         }
 
         private string _exclusionString;
+
         public string ExclusionString
         {
             get => _exclusionString;
-            set { _exclusionString = value; RaisePropertyChanged(() => ExclusionString); }
+            set
+            {
+                _exclusionString = value;
+                RaisePropertyChanged(() => ExclusionString);
+            }
         }
 
 
@@ -309,6 +316,7 @@ namespace AcrlSync.ViewModel
         public RelayCommand FindAccClick { get; }
 
         private List<Tree> _seasons;
+
         public List<Tree> Seasons
         {
             get { return _seasons; }
@@ -320,6 +328,7 @@ namespace AcrlSync.ViewModel
         }
 
         private List<OptionItem> _options;
+
         public List<OptionItem> Options
         {
             get { return _options; }
@@ -327,7 +336,6 @@ namespace AcrlSync.ViewModel
             {
                 _options = value;
                 RaisePropertyChanged(() => Options);
-
             }
         }
 
@@ -337,7 +345,10 @@ namespace AcrlSync.ViewModel
 
             if (!exists)
             {
-                System.Windows.Forms.MessageBox.Show(string.Format("The \"{0}\" Cars Path: \"{1}\" doesn't exist.\n\nPlease create the folder or update the path.", game, getPath(game)), "Cars folder not found.",
+                System.Windows.Forms.MessageBox.Show(
+                    string.Format(
+                        "The \"{0}\" Cars Path: \"{1}\" doesn't exist.\n\nPlease create the folder or update the path.",
+                        game, getPath(game)), "Cars folder not found.",
                     System.Windows.Forms.MessageBoxButtons.OK,
                     System.Windows.Forms.MessageBoxIcon.Error);
             }
@@ -395,6 +406,7 @@ namespace AcrlSync.ViewModel
                         FtpError = "";
                         Options = GetSeasons("/Download");
                     }
+
                     if (message.Notification == "Connection Failure")
                     {
                         Loading = "";
@@ -402,7 +414,8 @@ namespace AcrlSync.ViewModel
                         FtpLoaded = true;
                         FtpError = "Could not Connect";
                         string errorMessage = "Could not connect to FTP: " + ConnectionSettings.Options.HostName;
-                        System.Windows.MessageBox.Show(errorMessage, "Connection Failure", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                        System.Windows.MessageBox.Show(errorMessage, "Connection Failure",
+                            System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                     }
                 }
             });
@@ -420,12 +433,15 @@ namespace AcrlSync.ViewModel
             using (Session session = new Session())
             {
                 try
-                { session.Open(ConnectionSettings.Options); }
-                catch(WinSCP.SessionRemoteException e)
+                {
+                    session.Open(ConnectionSettings.Options);
+                }
+                catch (WinSCP.SessionRemoteException e)
                 {
                     System.Console.WriteLine(e.Message);
                     return null;
                 }
+
                 string remotePath = root;
 
                 List<OptionItem> seasons = new List<OptionItem>();
@@ -449,7 +465,7 @@ namespace AcrlSync.ViewModel
                                     if (itemThree.IsDirectory && itemThree.Name != "..")
                                     {
                                         string[] words = itemThree.FullName.Split('/');
-                                        
+
                                         OptionItem optionItem = new OptionItem
                                         {
                                             Name = words[2] + " - " + words[3] + " - " + words[4],
@@ -464,7 +480,8 @@ namespace AcrlSync.ViewModel
                         }
                     }
                 }
-                return(seasons);
+
+                return (seasons);
             }
         }
 
@@ -526,7 +543,7 @@ namespace AcrlSync.ViewModel
                     _exclusionString = string.Join(":", settings.ExcludedSkins);
                 }
             }
-            catch(FileNotFoundException)
+            catch (FileNotFoundException)
             {
                 _paths = new Dictionary<string, string>();
                 _exclusionString = "";
@@ -562,19 +579,22 @@ namespace AcrlSync.ViewModel
                     {
                         return;
                     }
-                    
+
                     SelectedJob.Items.Add(new Item(item.DownloadPath, item.Game));
                 }
             }
+
             if (SelectedJob.Items.Count < 1)
             {
-                System.Windows.MessageBox.Show("No series selected", "Check some series", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                System.Windows.MessageBox.Show("No series selected", "Check some series",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return;
             }
 
             if (SelectedJob == null)
             {
-                System.Windows.MessageBox.Show("A job must be selected", "Select a Job", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                System.Windows.MessageBox.Show("A job must be selected", "Select a Job",
+                    System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return;
             }
 
@@ -601,6 +621,7 @@ namespace AcrlSync.ViewModel
                 FtpLoaded = true;
                 return;
             }
+
             Skins = analysis.SkinCount.ToString().PadLeft(3);
             Files = analysis.Files.ToString().PadLeft(3);
             if (analysis.Size == 0)
@@ -619,6 +640,7 @@ namespace AcrlSync.ViewModel
                 Log += "****                     ANALYSIS  ABORTED                     ****\n";
                 Log += "*******************************************************************\n";
             }
+
             AnalysisText = "A_nalyse";
             _analyseInProgress = false;
             FtpLoaded = true;
@@ -661,181 +683,116 @@ namespace AcrlSync.ViewModel
             RemoteDirectoryInfo skinInfo; // WinSCP API object that represents the contents of the car/skins folder.
             RemoteDirectoryInfo skinFiles; // WinSCP API object that represents the contents of a skin folder.
 
+            // ACC
+
             List<string> exclusionPatterns;
-            if (String.IsNullOrWhiteSpace(ExclusionString)) {
+            if (String.IsNullOrWhiteSpace(ExclusionString))
+            {
                 exclusionPatterns = new List<string>();
-            } else {
-                exclusionPatterns = ExclusionString.Split(':').ToList().ConvertAll(x => {
-                    x = x.ToLowerInvariant().Replace('/', '\\'); // Make the user pattern lowercase and windows dir separated.
-                    var regexParts = x.Split('*').ToList().ConvertAll(y => Regex.Escape(y)); // Split pattern into parts between wildcards and escape those parts.
-                    return String.Join(".*", regexParts.ToArray()); // Reassemble the parts into a regex pattern with the proper regex wildcard.
-                    });
+            }
+            else
+            {
+                exclusionPatterns = ExclusionString.Split(':').ToList().ConvertAll(x =>
+                {
+                    x = x.ToLowerInvariant()
+                        .Replace('/', '\\'); // Make the user pattern lowercase and windows dir separated.
+                    var regexParts =
+                        x.Split('*').ToList()
+                            .ConvertAll(y =>
+                                Regex.Escape(y)); // Split pattern into parts between wildcards and escape those parts.
+                    return
+                        String.Join(".*",
+                            regexParts
+                                .ToArray()); // Reassemble the parts into a regex pattern with the proper regex wildcard.
+                });
             }
 
             using (Session session = new Session())
             {
                 // Connect to the FTP.
                 try
-                { session.Open(ConnectionSettings.Options); }
+                {
+                    session.Open(ConnectionSettings.Options);
+                }
                 catch (WinSCP.SessionRemoteException e)
                 {
                     System.Console.WriteLine(e.Message);
                     return null;
                 }
-                
+
                 foreach (Item item in job.Items)
                 {
                     string localPath;
                     // Open the folder for the series and get the list of car folders.
-                    try {
-                        carInfo = session.ListDirectory(item.FTPPath);
-                    }
-                    catch (WinSCP.SessionRemoteException e) {
-                        Log += string.Format("{0}\n", e.Message);
-                        System.Console.WriteLine(e.Message);
-                        continue;
-                    }
-                    
-                    // Iterate over the cars.
-                    foreach (RemoteFileInfo car in carInfo.Files)
+
+                    if (item.Game == "AC")
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                            return data;
-                        if (car.IsDirectory && car.Name != "..")
+                        try
                         {
-                            reporter.ReportProgressAsync(() =>
-                            {
-                                Log += string.Format("Car: {0}\n", car.Name);
-                            });
+                            carInfo = session.ListDirectory(item.FTPPath);
+                        }
+                        catch (WinSCP.SessionRemoteException e)
+                        {
+                            Log += string.Format("{0}\n", e.Message);
+                            System.Console.WriteLine(e.Message);
+                            continue;
+                        }
 
-                            // Navigate to the skins folder and get a list its contents
-                            localPath = Path.Combine(getPath(item.Game), car.Name, "skins");
-                            try {
-                                skinInfo = session.ListDirectory(car.FullName + "/skins");
-                            }
-                            catch (WinSCP.SessionRemoteException e) {
-                                // No Skins folder! Issue lies with the file struct on server.
-                                // Tell user to inform a moderator.
-                                Log += string.Format("Error: {0} could not access skins folder. Skipping car, please inform a moderator.\n", car.Name);
-                                System.Console.WriteLine(e.Message);
-                                continue;
-                            }
-                            
-                            // Iterate over the skins.
-                            foreach (RemoteFileInfo skinDir in skinInfo.Files)
+                        // Iterate over the cars.
+                        foreach (RemoteFileInfo car in carInfo.Files)
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                                return data;
+                            if (car.IsDirectory && car.Name != "..")
                             {
-                                if (cancellationToken.IsCancellationRequested)
-                                    return data;
+                                reporter.ReportProgressAsync(() => { Log += string.Format("Car: {0}\n", car.Name); });
 
-                                // Only interested in the directories.
-                                if (skinDir.IsDirectory && skinDir.Name != "..")
+                                // Navigate to the skins folder and get a list its contents
+                                localPath = Path.Combine(getPath(item.Game), car.Name, "skins");
+                                try
                                 {
-                                    reporter.ReportProgressAsync(() =>
+                                    skinInfo = session.ListDirectory(car.FullName + "/skins");
+                                }
+                                catch (WinSCP.SessionRemoteException e)
+                                {
+                                    // No Skins folder! Issue lies with the file struct on server.
+                                    // Tell user to inform a moderator.
+                                    Log += string.Format(
+                                        "Error: {0} could not access skins folder. Skipping car, please inform a moderator.\n",
+                                        car.Name);
+                                    System.Console.WriteLine(e.Message);
+                                    continue;
+                                }
+
+                                // Iterate over the skins.
+                                foreach (RemoteFileInfo skinDir in skinInfo.Files)
+                                {
+                                    if (cancellationToken.IsCancellationRequested)
+                                        return data;
+
+                                    // Only interested in the directories.
+                                    if (skinDir.IsDirectory && skinDir.Name != "..")
                                     {
-                                        Log += string.Format("\tSkin: {0,-40}", skinDir.Name);
-                                    });
-                                    localPath = Path.Combine(getPath(item.Game), car.Name, "skins", skinDir.Name);
-                                    if (IsExcluded(exclusionPatterns, Path.Combine(car.Name, "skins", skinDir.Name)))
-                                    {
-                                        // Skin is Excluded! Skip it
                                         reporter.ReportProgressAsync(() =>
                                         {
-                                            Log += string.Format("Skin has been excluded\n");
+                                            Log += string.Format("\tSkin: {0,-40}", skinDir.Name);
                                         });
-                                    }
-                                    else if (!Directory.Exists(localPath))
-                                    {
-                                        // Skin does not exist on users system, mark all files for download.
-                                        reporter.ReportProgressAsync(() =>
+                                        localPath = Path.Combine(getPath(item.Game), car.Name, "skins", skinDir.Name);
+                                        if (IsExcluded(exclusionPatterns,
+                                            Path.Combine(car.Name, "skins", skinDir.Name)))
                                         {
-                                            Log += string.Format("Not found in cars folder\n");
-                                        });
-                                        Skin skin = new Skin
-                                        {
-                                            Name = skinDir.Name,
-                                            Car = car.Name,
-                                            Game = item.Game
-                                        };
-                                        data.SkinCount += 1;
-                                        try { // Don't think this one can actually fail. As listing contents of dir we know exists.
-                                            skinFiles = session.ListDirectory(skinDir.FullName);
-                                        }
-                                        catch (WinSCP.SessionRemoteException e) {
-                                            System.Console.WriteLine(e.Message);
-                                            continue;
-                                        }
-                                        List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
-                                        foreach (RemoteFileInfo file in skinFiles.Files)
-                                        {
-                                            if (cancellationToken.IsCancellationRequested)
-                                                return data;
-                                            if (!file.IsDirectory && file.Name != "..")
-                                            {
-                                                remoteFiles.Add(file);
-                                                data.Files += 1;
-                                                data.Size += file.Length;
-
-                                                reporter.ReportProgressAsync(() =>
-                                                {
-                                                    Skins = data.SkinCount.ToString().PadLeft(3);
-                                                    Files = data.Files.ToString().PadLeft(3);
-                                                    if (data.Size == 0)
-                                                        Size = "0 b";
-                                                    else
-                                                        Size = ByteSize.FromBytes(data.Size).ToString();
-                                                });
-                                            }
-                                        }
-                                        skin.Files = remoteFiles;
-                                        data.Skins.Add(skin);
-                                    }
-                                    else
-                                    {
-                                        // Skin exists on users system check each file in turn.
-                                        skinFiles = session.ListDirectory(skinDir.FullName);
-                                        List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
-                                        foreach (RemoteFileInfo file in skinFiles.Files)
-                                        {
-                                            if (cancellationToken.IsCancellationRequested)
-                                                return data;
-                                            if (!file.IsDirectory && file.Name != "..")
-                                            {
-                                                localPath = Path.Combine(getPath(item.Game), car.Name, "skins", skinDir.Name, file.Name);
-                                                bool required = false;
-                                                if (!File.Exists(localPath))
-                                                {
-                                                    required = true;
-                                                }
-
-                                                else
-                                                {
-                                                    DateTime remoteWriteTime = file.LastWriteTime;
-                                                    DateTime localWriteTime = File.GetLastWriteTime(localPath);
-                                                    if (remoteWriteTime > localWriteTime)
-                                                    {
-                                                        required = true;
-                                                    }
-                                                }
-
-                                                if (required)
-                                                {
-                                                    remoteFiles.Add(file);
-                                                    data.Files += 1;
-                                                    data.Size += file.Length;
-                                                }
-                                            }
-                                        }
-                                        if (remoteFiles.Count > 0)
-                                        {
+                                            // Skin is Excluded! Skip it
                                             reporter.ReportProgressAsync(() =>
                                             {
-                                                Log += string.Format("Has new or updated files\n");
-                                                Skins = data.SkinCount.ToString().PadLeft(3);
-                                                Files = data.Files.ToString().PadLeft(3);
-                                                if (data.Size == 0)
-                                                    Size = "0 b";
-                                                else
-                                                    Size = ByteSize.FromBytes(data.Size).ToString();
+                                                Log += string.Format("Skin has been excluded\n");
+                                            });
+                                        }
+                                        else if (!Directory.Exists(localPath))
+                                        {
+                                            // Skin does not exist on users system, mark all files for download.
+                                            reporter.ReportProgressAsync(() =>
+                                            {
+                                                Log += string.Format("Not found in cars folder\n");
                                             });
                                             Skin skin = new Skin
                                             {
@@ -844,34 +801,202 @@ namespace AcrlSync.ViewModel
                                                 Game = item.Game
                                             };
                                             data.SkinCount += 1;
+                                            try
+                                            {
+                                                // Don't think this one can actually fail. As listing contents of dir we know exists.
+                                                skinFiles = session.ListDirectory(skinDir.FullName);
+                                            }
+                                            catch (WinSCP.SessionRemoteException e)
+                                            {
+                                                System.Console.WriteLine(e.Message);
+                                                continue;
+                                            }
+
+                                            List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
+                                            foreach (RemoteFileInfo file in skinFiles.Files)
+                                            {
+                                                if (cancellationToken.IsCancellationRequested)
+                                                    return data;
+                                                if (!file.IsDirectory && file.Name != "..")
+                                                {
+                                                    remoteFiles.Add(file);
+                                                    data.Files += 1;
+                                                    data.Size += file.Length;
+
+                                                    reporter.ReportProgressAsync(() =>
+                                                    {
+                                                        Skins = data.SkinCount.ToString().PadLeft(3);
+                                                        Files = data.Files.ToString().PadLeft(3);
+                                                        if (data.Size == 0)
+                                                            Size = "0 b";
+                                                        else
+                                                            Size = ByteSize.FromBytes(data.Size).ToString();
+                                                    });
+                                                }
+                                            }
+
                                             skin.Files = remoteFiles;
                                             data.Skins.Add(skin);
                                         }
                                         else
                                         {
-                                            reporter.ReportProgressAsync(() =>
+                                            // Skin exists on users system check each file in turn.
+                                            skinFiles = session.ListDirectory(skinDir.FullName);
+                                            List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
+                                            foreach (RemoteFileInfo file in skinFiles.Files)
                                             {
-                                                Log += string.Format("\n");
-                                            });
+                                                if (cancellationToken.IsCancellationRequested)
+                                                    return data;
+                                                if (!file.IsDirectory && file.Name != "..")
+                                                {
+                                                    localPath = Path.Combine(getPath(item.Game), car.Name, "skins",
+                                                        skinDir.Name, file.Name);
+                                                    bool required = false;
+                                                    if (!File.Exists(localPath))
+                                                    {
+                                                        required = true;
+                                                    }
+
+                                                    else
+                                                    {
+                                                        DateTime remoteWriteTime = file.LastWriteTime;
+                                                        DateTime localWriteTime = File.GetLastWriteTime(localPath);
+                                                        if (remoteWriteTime > localWriteTime)
+                                                        {
+                                                            required = true;
+                                                        }
+                                                    }
+
+                                                    if (required)
+                                                    {
+                                                        remoteFiles.Add(file);
+                                                        data.Files += 1;
+                                                        data.Size += file.Length;
+                                                    }
+                                                }
+                                            }
+
+                                            if (remoteFiles.Count > 0)
+                                            {
+                                                reporter.ReportProgressAsync(() =>
+                                                {
+                                                    Log += string.Format("Has new or updated files\n");
+                                                    Skins = data.SkinCount.ToString().PadLeft(3);
+                                                    Files = data.Files.ToString().PadLeft(3);
+                                                    if (data.Size == 0)
+                                                        Size = "0 b";
+                                                    else
+                                                        Size = ByteSize.FromBytes(data.Size).ToString();
+                                                });
+                                                Skin skin = new Skin
+                                                {
+                                                    Name = skinDir.Name,
+                                                    Car = car.Name,
+                                                    Game = item.Game
+                                                };
+                                                data.SkinCount += 1;
+                                                skin.Files = remoteFiles;
+                                                data.Skins.Add(skin);
+                                            }
+                                            else
+                                            {
+                                                reporter.ReportProgressAsync(() => { Log += string.Format("\n"); });
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+
+                    if (item.Game == "ACC")
+                    {
+                        RemoteDirectoryInfo carJsons;
+                        try
+                        {
+                            carJsons = session.ListDirectory(item.FTPPath + "/cars");
+                        }
+                        catch (WinSCP.SessionRemoteException e)
+                        {
+                            Log += string.Format("{0}\n", e.Message);
+                            System.Console.WriteLine(e.Message);
+                            continue;
+                        }
+
+                        foreach (RemoteFileInfo carJson in carJsons.Files)
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                                return data;
+                            if (carJson.Name == "..") continue;
+
+                            reporter.ReportProgressAsync(
+                                () => { Log += string.Format("Car: {0}\n", carJson.Name); });
+
+                            var setupName = carJson.Name.Replace(".json", "");
+
+                            RemoteDirectoryInfo carLiveries;
+                            try
+                            {
+                                carLiveries = session.ListDirectory(item.FTPPath + "/liveries/" + setupName);
+                            }
+                            catch (WinSCP.SessionRemoteException e)
+                            {
+                                Log += string.Format("{0}\n", e.Message);
+                                System.Console.WriteLine(e.Message);
+                                continue;
+                            }
+
+                            Skin skin = new Skin
+                            {
+                                Name = setupName,
+                                Game = item.Game
+                            };
+                            data.SkinCount++;
+                            data.Size += carJson.Length;
+
+                            List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
+                            remoteFiles.Add(carJson);
+
+                            foreach (RemoteFileInfo carLivery in carLiveries.Files)
+                            {
+                                if (cancellationToken.IsCancellationRequested) return data;
+
+                                if (carLivery.Name == "..") continue;
+
+                                remoteFiles.Add(carLivery);
+                                data.Files++;
+                                data.Size += carLivery.Length;
+                            }
+
+                            reporter.ReportProgressAsync(() =>
+                            {
+                                Skins = data.SkinCount.ToString().PadLeft(3);
+                                Files = data.Files.ToString().PadLeft(3);
+                                if (data.Size == 0)
+                                    Size = "0 b";
+                                else
+                                    Size = ByteSize.FromBytes(data.Size).ToString();
+                            });
+
+                            skin.Files = remoteFiles;
+                            data.Skins.Add(skin);
+                        }
+                    }
                 }
             }
+
             return data;
         }
 
         private bool IsExcluded(List<string> exclusionPatterns, string path)
         {
             path = path.ToLowerInvariant();
-            foreach(string pattern in exclusionPatterns)
+            foreach (string pattern in exclusionPatterns)
             {
                 if (Regex.IsMatch(path, pattern))
                     return true;
             }
+
             return false;
         }
 
@@ -917,6 +1042,7 @@ namespace AcrlSync.ViewModel
                 Log += "****                     DOWNLOAD  ABORTED                     ****\n";
                 Log += "*******************************************************************\n";
             }
+
             RunText = "_Run";
             _runInProgress = false;
             FtpLoaded = true;
@@ -946,34 +1072,47 @@ namespace AcrlSync.ViewModel
                             Log += string.Format("Car: {1}\n\tSkin: {0,-40}\n", skin.Name, skin.Car);
                         });
                     else
-                        reporter.ReportProgressAsync(() =>
-                        {
-                            Log += string.Format("\tSkin: {0,-40}\n", skin.Name);
-                        });
+                        reporter.ReportProgressAsync(() => { Log += string.Format("\tSkin: {0,-40}\n", skin.Name); });
 
-                    string localPath = Path.Combine(getPath(skin.Game), skin.Car, "skins", skin.Name);
-                    Directory.CreateDirectory(localPath);
-                    Queue<RemoteFileInfo> fileQueue = new Queue<RemoteFileInfo>(skin.Files);
-                    while (fileQueue.Count > 0)
+                    if (skin.Game == "AC")
                     {
-                        var file = fileQueue.Dequeue();
-                        if (cancellationToken.IsCancellationRequested)
-                            return data;
+                        string localPath = Path.Combine(getPath(skin.Game), skin.Car, "skins", skin.Name);
+                        Directory.CreateDirectory(localPath);
+                        Queue<RemoteFileInfo> fileQueue = new Queue<RemoteFileInfo>(skin.Files);
+                        while (fileQueue.Count > 0)
+                        {
+                            var file = fileQueue.Dequeue();
+                            if (cancellationToken.IsCancellationRequested)
+                                return data;
 
+                            reporter.ReportProgressAsync(() =>
+                            {
+                                Log += string.Format("\t\tDownloading: {0,-40}", file.Name);
+                            });
+
+                            //do the download here
+                            string remotePath = file.FullName;
+                            session.GetFiles(session.EscapeFileMask(remotePath), Path.Combine(localPath, file.Name))
+                                .Check();
+                            data.Files -= 1;
+                            data.Size -= file.Length;
+                            skin.Files.Remove(file);
+                            reporter.ReportProgressAsync(() =>
+                            {
+                                Log += string.Format("Done\n");
+                                Skins = data.SkinCount.ToString().PadLeft(3);
+                                Files = data.Files.ToString().PadLeft(3);
+                                if (data.Size == 0)
+                                    Size = "0 b";
+                                else
+                                    Size = ByteSize.FromBytes(data.Size).ToString();
+                            });
+                        }
+
+                        data.Skins.Remove(skin);
+                        data.SkinCount -= 1;
                         reporter.ReportProgressAsync(() =>
                         {
-                            Log += string.Format("\t\tDownloading: {0,-40}", file.Name);
-                        });
-
-                        //do the download here
-                        string remotePath = file.FullName;
-                        session.GetFiles(session.EscapeFileMask(remotePath), Path.Combine(localPath, file.Name)).Check();
-                        data.Files -= 1;
-                        data.Size -= file.Length;
-                        skin.Files.Remove(file);
-                        reporter.ReportProgressAsync(() =>
-                        {
-                            Log += string.Format("Done\n");
                             Skins = data.SkinCount.ToString().PadLeft(3);
                             Files = data.Files.ToString().PadLeft(3);
                             if (data.Size == 0)
@@ -981,21 +1120,43 @@ namespace AcrlSync.ViewModel
                             else
                                 Size = ByteSize.FromBytes(data.Size).ToString();
                         });
-
                     }
-                    data.Skins.Remove(skin);
-                    data.SkinCount -= 1;
-                    reporter.ReportProgressAsync(() =>
+
+                    if (skin.Game == "ACC")
                     {
-                        Skins = data.SkinCount.ToString().PadLeft(3);
-                        Files = data.Files.ToString().PadLeft(3);
-                        if (data.Size == 0)
-                            Size = "0 b";
-                        else
-                            Size = ByteSize.FromBytes(data.Size).ToString();
-                    });
+                        foreach (RemoteFileInfo file in skin.Files)
+                        {
+                            if (file.Name == skin.Name + ".json")
+                            {
+                                session.GetFiles(session.EscapeFileMask(file.FullName),
+                                    Path.Combine(getPath(skin.Game), "Cars", file.Name)).Check();
+                                
+                                data.Files -= 1;
+                                data.Size -= file.Length;
+                                continue;
+                            }
+
+                            session.GetFiles(session.EscapeFileMask(file.FullName),
+                                Path.Combine(getPath(skin.Game), "Liveries", skin.Name, file.Name));
+                            data.Files -= 1;
+                            data.Size -= file.Length;
+                        }
+                        
+                        data.Skins.Remove(skin);
+                        data.SkinCount -= 1;
+                        reporter.ReportProgressAsync(() =>
+                        {
+                            Skins = data.SkinCount.ToString().PadLeft(3);
+                            Files = data.Files.ToString().PadLeft(3);
+                            if (data.Size == 0)
+                                Size = "0 b";
+                            else
+                                Size = ByteSize.FromBytes(data.Size).ToString();
+                        });
+                    }
                 }
             }
+
             return data;
         }
 
