@@ -49,7 +49,7 @@
                         />
                 <Button Grid.Column="5" Grid.Row="1" Margin="10 0 0 0" Content="_Find" Command="{Binding FindAcClick}"/>
                 
-                <TextBlock Grid.Column="4" Grid.Row="2" FontWeight="Bold" Text="ACC Cars Path"/>
+                <TextBlock Grid.Column="4" Grid.Row="2" FontWeight="Bold" Text="ACC Custom Path"/>
                 <TextBox Grid.Column="4" Grid.Row="3" Grid.RowSpan="2" Text="{Binding ACCPath}"
                         VerticalScrollBarVisibility="Disabled"
                         HorizontalScrollBarVisibility="Auto"

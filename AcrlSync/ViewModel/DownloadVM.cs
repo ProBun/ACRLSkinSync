@@ -553,6 +553,12 @@ namespace AcrlSync.ViewModel
 
         private void SaveSettingsJson()
         {
+            string accPath = getPath("ACC");
+            if (accPath == "")
+            {
+                setPath("ACC", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Assetto Corsa Competizione\\Customs");
+            }
+            
             var GeneralSettings = new GeneralSettings(getPath("AC"), getPath("ACC"), ExclusionString);
             string json = JsonConvert.SerializeObject(GeneralSettings, Formatting.Indented);
             string path = AppDomain.CurrentDomain.BaseDirectory;
