@@ -722,7 +722,6 @@ namespace AcrlSync.ViewModel
 
                 foreach (Item item in job.Items)
                 {
-                    string localPath;
                     // Open the folder for the series and get the list of car folders.
 
                     if (item.Game == "AC")
@@ -748,7 +747,7 @@ namespace AcrlSync.ViewModel
                                 reporter.ReportProgressAsync(() => { Log += string.Format("Car: {0}\n", car.Name); });
 
                                 // Navigate to the skins folder and get a list its contents
-                                localPath = Path.Combine(getPath(item.Game), car.Name, "skins");
+                                string localPath = Path.Combine(getPath(item.Game), car.Name, "skins");
                                 try
                                 {
                                     skinInfo = session.ListDirectory(car.FullName + "/skins");
@@ -946,18 +945,39 @@ namespace AcrlSync.ViewModel
                                 continue;
                             }
 
+                            bool skinRequired = false;
+                            
                             Skin skin = new Skin
                             {
                                 Name = setupName,
                                 Game = item.Game
                             };
-                            data.SkinCount++;
-                            data.Size += carJson.Length;
 
                             List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
-                            remoteFiles.Add(carJson);
-                            data.Files++;
-                            data.Size += carJson.Length;
+
+                            string localPath = Path.Combine(getPath(item.Game), "Cars", carJson.Name);
+                            bool required = false;
+                            
+                            if (!File.Exists(localPath))
+                            {
+                                required = true;
+                            }
+                            else
+                            {
+                                DateTime remoteWriteTime = carJson.LastWriteTime;
+                                DateTime localWriteTime = File.GetLastWriteTime(localPath);
+                                if (remoteWriteTime > localWriteTime)
+                                {
+                                    required = true;
+                                }
+                            }
+                            
+                            if (required) {
+                                skinRequired = true;
+                                remoteFiles.Add(carJson);
+                                data.Files++;
+                                data.Size += carJson.Length;
+                            }
 
                             foreach (RemoteFileInfo carLivery in carLiveries.Files)
                             {
@@ -965,6 +985,26 @@ namespace AcrlSync.ViewModel
 
                                 if (carLivery.Name == "..") continue;
 
+                                localPath = Path.Combine(getPath(item.Game), "Liveries", skin.Name, carLivery.Name);
+                                required = false;
+                                
+                                if (!File.Exists(localPath))
+                                {
+                                    required = true;
+                                }
+                                else
+                                {
+                                    DateTime remoteWriteTime = carLivery.LastWriteTime;
+                                    DateTime localWriteTime = File.GetLastWriteTime(localPath);
+                                    if (remoteWriteTime > localWriteTime)
+                                    {
+                                        required = true;
+                                    }
+                                }
+
+                                if (!required) continue;
+                                
+                                skinRequired = true;
                                 remoteFiles.Add(carLivery);
                                 data.Files++;
                                 data.Size += carLivery.Length;
@@ -980,8 +1020,12 @@ namespace AcrlSync.ViewModel
                                     Size = ByteSize.FromBytes(data.Size).ToString();
                             });
 
-                            skin.Files = remoteFiles;
-                            data.Skins.Add(skin);
+                            if (skinRequired)
+                            {
+                                skin.Files = remoteFiles;
+                                data.Skins.Add(skin);
+                                data.SkinCount++;
+                            }
                         }
                     }
                 }
