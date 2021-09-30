@@ -956,6 +956,8 @@ namespace AcrlSync.ViewModel
 
                             List<RemoteFileInfo> remoteFiles = new List<RemoteFileInfo>();
                             remoteFiles.Add(carJson);
+                            data.Files++;
+                            data.Size += carJson.Length;
 
                             foreach (RemoteFileInfo carLivery in carLiveries.Files)
                             {
@@ -1130,7 +1132,7 @@ namespace AcrlSync.ViewModel
                             {
                                 session.GetFiles(session.EscapeFileMask(file.FullName),
                                     Path.Combine(getPath(skin.Game), "Cars", file.Name)).Check();
-                                
+
                                 data.Files -= 1;
                                 data.Size -= file.Length;
                                 continue;
